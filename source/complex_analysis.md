@@ -12,14 +12,14 @@ title: 复杂度分析
 2. 测试结构受数据规模的影响。测试数据规模太小，测试结果可能无法真实地反应算法的性能。
 
 ## 大 O 时间复杂度表示法
-```java
-int cal(int n) {
-  int sum = 0;
-  int i = 1;
-  for (; i <= n; ++i) {
-    sum = sum + i;
-  }
-  return sum;
+
+```go
+func cal(n int) int {
+    sum := 0
+    for i := 1; i <= n; ++i {
+        sum = sum + i
+    }
+    return sum
 }
 ```
 
