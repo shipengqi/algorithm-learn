@@ -9,12 +9,15 @@ type ArrayStack struct {
 }
 
 // 初始化栈
-func (a *ArrayStack) InitArrayStack(n int) {
+func (a *ArrayStack) NewArrayStack(n int) {
 	a.items = []string{}
 	a.count = 0
 	a.n = n
 }
 
+func NewArrayStack2(n int) *ArrayStack {
+	return &ArrayStack{ make([]string, 0, 32), 0, n}
+}
 // 入栈
 func (a *ArrayStack) Push(item string) bool {
 	if a.count == a.n { // 空间已满
@@ -39,7 +42,7 @@ func (a *ArrayStack) Pop() string {
 
 func main() {
    s := ArrayStack{}
-   s.InitArrayStack(5)
+   s.NewArrayStack(5)
    s.Push("Hello")
    fmt.Println(s)
    s.Push("World")
