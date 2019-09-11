@@ -49,12 +49,10 @@ func TestLinkedListQueue_Dequeue(t *testing.T) {
 		if  got != nil {
 			t.Fatalf("Wanted %v, got %v", nil, got)
 		}
-		t.Log(q)
 	})
 
 	t.Run("Get LinkedListQueue head node 5", func(t *testing.T) {
 		q.Enqueue(5)
-		t.Log(q)
 		want = 5
 		got := q.Dequeue()
 
