@@ -132,12 +132,12 @@ func SelectionSort(a []int)  {
 	}
 	for i := 0; i < length; i ++ {
         minIndex := i
-		for j := i + 1; j < length; j ++ { // 找到最小值
-			if a[j] < a[minIndex] {
-				minIndex = j
-			}
-		}
-		a[i], a[minIndex] = a[minIndex], a[i] // 交换
+        for j := i + 1; j < length; j ++ { // 找到最小值
+            if a[j] < a[minIndex] {
+                minIndex = j
+            }
+        }
+        a[i], a[minIndex] = a[minIndex], a[i] // 交换
 	}
 }
 ```
@@ -164,12 +164,115 @@ if a[j] > value {
 ```
 
 ## 归并排序
-归并排序使用的就是分治思想。分治，就是将一个大问题分解成小的子问题来解决。小的子问题解决了，大问题也就解决了。
+归并排序使用的就是**分治思想**。分治，就是将一个大问题分解成小的子问题来解决。小的子问题解决了，大问题也就解决了。
 
 分治思想跟我们前面讲的递归思想很像。是的，分治算法一般都是用递归来实现的。分治是一种解决问题的处理思想，递归是一种编程技巧。
 
-```go
+![merge_sort](./imgs/merge_sort.jpg)
 
+```go
+func MergeSort(a []int)  {
+	length := len(a)
+	if len(a) <= 1 {
+		return
+	}
+	mergeSort(a, 0, length - 1)
+}
+
+func mergeSort(arr []int, start, end int)  {
+	if start >= end {
+		return
+	}
+	mid := (start + end) / 2
+	mergeSort(arr, start, mid)
+	mergeSort(arr, mid + 1, end)
+	merge(arr, start, mid, end)
+}
+
+// arr 是原切片，只传入分组后的下标
+func merge(arr []int, start, mid, end int) {
+	// 申请一个可以存放两个分组所有元素的临时切片
+	tmpArr := make([]int, end - start + 1)
+	i := start // 第一个分组的开始位置
+	j := mid + 1 // 第二个分组的开始位置
+	k := 0
+	for ; i <= mid && j <= end; k++ { // 每个分组都已经排好顺序
+		if arr[i] < arr[j] {  // 直接比较每个分组相同位置的元素大小
+			tmpArr[k] = arr[i] // 小的元素放到临时切片中
+			i++
+		} else {
+			tmpArr[k] = arr[j]
+			j++
+		}
+	}
+	copy(arr[start : end + 1], tmpArr) // 将临时切片的元素拷贝到原切片的对应位置
+}
 ```
 
+### 分析归并排序
+1. 因为归并排序的合并函数，在合并两个有序数组为一个有序数组时，需要借助额外的存储空间。归并排序不是原地排序算法。每次合并操作都需要申
+请额外的内存空间，但在合并完成之后，临时开辟的内存空间就被释放掉了。在任意时刻，CPU 只会有一个函数在执行，也就只会有一个临时的内存空
+间在使用。临时内存空间最大也不会超过n个数据的大小，所以空间复杂度是 `O(n)`。
+2. 合并的过程中，如果 `A[p…q]` 和 `A[q+1…r]` 之间有值相同的元素，我们可以先把 `A[p…q]` 中的元素放入 `tmp` 数组。这样就保证了
+值相同的元素，在合并前后的先后顺序不变。所以，归并排序是一个稳定的排序算法
+3. 归并排序的最好情况时间复杂度、最坏情况和平均情况时间复杂度都为 `O(nlogn)`。
+
 ## 快速排序
+快速排序简称“快排”，使用的也是**分治思想**。
+
+快排的思想：如果要排序数组中下标从 p 到 r 之间的一组数据，选择 p 到 r 之间的任意一个数据作为 pivot（分区点）。我们遍历 p 到 r 之间的
+数据，将小于 pivot 的放到左边，将大于 pivot 的放到右边，将 pivot 放到中间。经过这一步骤之后，数组 p 到 r 之间的数据就被分成了三个部分，
+前面 p 到 `q-1` 之间都是小于 pivot 的，中间是 pivot，后面的 `q+1` 到 r 之间是大于 pivot 的。
+
+```go
+func QuickSort(a []int) {
+	length := len(a)
+	if len(a) <= 1 {
+		return
+	}
+	separateSort(a, 0, length - 1)
+}
+
+func separateSort(arr []int, start, end int) {
+	if start >= end {
+		return
+	}
+	i := partition(arr, start, end)
+	separateSort(arr, start, i-1)
+	separateSort(arr, i+1, end)
+}
+```
+
+如果我们不考虑空间消耗的话，`partition()` 分区函数可以写得非常简单。我们申请两个临时数组 X 和 Y，遍历 `A[p…r]`，将小于 pivot 的元素
+都拷贝到临时数组 X，将大于 pivot 的元素都拷贝到临时数组 Y，最后再将数组 X 和数组 Y 中数据顺序拷贝到 `A[p…r]`。但是，这样就不是原地排
+序算法了。
+
+![qucik_sort](./imgs/qucik_sort.jpg)
+
+```go
+func partition(arr []int, start, end int) int {
+	// 选取最后一位当对比数字
+	pivot := arr[end]
+
+	var i = start
+	for j := start; j < end; j++ {
+		if arr[j] < pivot {
+			if !(i == j) {
+				// 交换位置
+				arr[i], arr[j] = arr[j], arr[i]
+			}
+			i++
+		}
+	}
+
+	arr[i], arr[end] = arr[end], arr[i]
+
+	return i
+}
+```
+
+## 快排和归并的区别
+![quick_and_merge](./imgs/quick_and_merge.jpg)
+
+- 归并排序的处理过程是由下到上的，先处理子问题，然后再合并。而快排正好相反，它的处理过程是由上到下的，先分区，然后再处理子问题。
+- 归并排序非原地排序算法，快速排序可以实现原地排序。
