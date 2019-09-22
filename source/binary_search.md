@@ -88,3 +88,125 @@ func bs(a []int, value, start, end int) int {
 - 数据量太小不适合二分查找。顺序遍历就足够了。
 - 数据量太大也不适合二分查找。二分查找的底层需要依赖数组这种数据结构，而数组为了支持随机访问的特性，要求内存空间连续，对内存的要求比较苛刻。
 比如，1GB 大小的数据，如果用数组来存储，那就需要 1GB 的连续内存空间。
+
+## 查找第一个值等于给定值的元素
+前面实现的二分查找，适用于有序数据集合中不存在重复的数据的情况，如果有重复数据，如何找到第一个等于给定值的元素？
+
+```go
+func BinarySearch(a []int, value int) int {
+	length := len(a)
+	if length < 1 {
+		return -1
+	}
+	start := 0
+	end := length -1
+	for start <= end {
+		mid := (start + end) / 2
+		if a[mid] > value {
+			end = mid - 1
+		} else if a[mid] < value {
+			start = mid + 1
+		} else {
+			if mid == 0 || a[mid - 1] != value {
+				return mid
+			} else {
+				end = mid - 1
+			}
+		}
+	}
+	return -1
+}
+```
+
+注意 `a[mid] == value` 时，要判断否有重复值，数据集合是有序的，要找到第一个等于给定值得元素：
+- 如果 `mid == 0` 说明，已经是 `a[mid]` 集合的第一个元素，不需要再继续查找。
+- 如果 `a[mid - 1] != value`，也就是 `a[mid]` 的前一个元素不等于 value，那么就说明 `a[mid]` 就是第一个等于给定值得元素。
+
+## 查找最后一个值等于给定值的元素
+```go
+func BinarySearch(a []int, value int) int {
+	length := len(a)
+	if length < 1 {
+		return -1
+	}
+	start := 0
+	end := length -1
+	for start <= end {
+		mid := (start + end) / 2
+		if a[mid] > value {
+			end = mid - 1
+		} else if a[mid] < value {
+			start = mid + 1
+		} else {
+			if mid == length - 1  || a[mid + 1] != value {
+				return mid
+			} else {
+				start = mid + 1
+			}
+		}
+	}
+	return -1
+}
+```
+
+和查找最后一个值等于给定值的元素思路差不多，注意 `a[mid] == value` 时：
+- 如果 `mid == length - 1` 说明，已经是 `a[mid]` 集合的最后一个元素，不需要再继续查找。
+- 如果 `a[mid + 1] != value`，也就是 `a[mid]` 的下一个元素不等于 value，那么就说明 `a[mid]` 就是最后一个等于给定值得元素。
+
+## 查找第一个大于等于给定值的元素
+```go
+func BinarySearch(a []int, value int) int {
+	length := len(a)
+	if length < 1 {
+		return -1
+	}
+	start := 0
+	end := length -1
+	for start <= end {
+		mid := (start + end) / 2
+		if a[mid] >= value {
+			if mid == 0 || a[mid - 1] < value {
+				return mid
+			} else {
+				end = mid - 1
+			}
+		} else {
+			start = mid + 1
+		}
+	}
+	return -1
+}
+```
+
+如果 `a[mid]` 大于等于给定值 value ，先看这个 `a[mid]` 是不是要找的第一个值大于等于给定值的元素。
+- 如果 `mid == 0` 说明，已经是 `a[mid]` 集合的第一个元素，不需要再继续查找。
+- 如果 `a[mid - 1] < value`，也就是前面一个元素小于要查找的值 value，那么就说明 `a[mid]` 就是我们要找得元素。
+
+## 查找最后一个小于等于给定值的元素
+```go
+func BinarySearch(a []int, value int) int {
+	length := len(a)
+	if length < 1 {
+		return -1
+	}
+	start := 0
+	end := length -1
+	for start <= end {
+		mid := (start + end) / 2
+		if a[mid] <= value {
+			if mid == length - 1 || a[mid + 1] > value {
+				return mid
+			} else {
+				start = mid + 1
+			}
+		} else {
+			end = mid - 1
+		}
+	}
+	return -1
+}
+```
+
+如果 `a[mid]` 小于等于给定值 value ，先看这个 `a[mid]` 是不是要找的第一个值小于等于给定值的元素。
+- 如果 `mid == length - 1` 说明，已经是 `a[mid]` 集合的最后一个元素，不需要再继续查找。
+- 如果 `a[mid + 1] > value`，后面一个元素大于要查找的值 value，那么就说明 `a[mid]` 就是我们要找得元素。
