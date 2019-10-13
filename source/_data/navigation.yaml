@@ -47,6 +47,9 @@ main:
 - text: 堆
   type: link
   path: heap.html
+- text: 图
+  type: link
+  path: graph.html
 
 - text: THEME
   type: label

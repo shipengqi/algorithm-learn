@@ -18,7 +18,7 @@ func (h *Heap) insert(data int) {
     h.count ++
     h.a[h.count] = data
 
-	//compare with parent node
+	// compare with parent node
 	i := h.count
 	parent := i / 2
 	// fmt.Println(i, parent)
