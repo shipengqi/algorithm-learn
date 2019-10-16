@@ -87,5 +87,123 @@ QQ 中的社交关系要还更复杂。QQ 不仅记录了用户之间的好友�
 ![graph_bsf](./imgs/graph_bsf.jpg)
 
 ```go
+// s 起始顶点，t 终止顶点
+func (g *Graph) BFS(s, t int) {
+	if s == t {
+		return
+	}
 
+	// init prev 记录搜索路径
+	prev := make([]int, g.v)
+	for index := range prev {
+		prev[index] = -1
+	}
+
+	// search by queue
+	var queue []int // 一个队列，存储已经被访问、但相连的顶点还没有被访问的顶点
+	visited := make([]bool, g.v) // 记录已经被访问的顶点，避免顶点被重复访问
+	queue = append(queue, s)
+	visited[s] = true  // 顶点设置为 true 表示已经被访问
+	isFound := false
+	for len(queue) > 0 && !isFound {
+		top := queue[0]
+		queue = queue[1:]
+		linkedList := g.adj[top]
+		for e := linkedList.Front(); e != nil; e = e.Next() {
+			k := e.Value.(int)
+			if !visited[k] {
+				prev[k] = top
+				if k == t {
+					isFound = true
+					break
+				}
+				queue = append(queue, k)
+				visited[k] = true
+			}
+		}
+	}
+
+	if isFound {
+		printPrev(prev, s, t)
+	} else {
+		fmt.Printf("no path found from %d to %d\n", s, t)
+	}
+}
 ```
+
+`prev` 用来记录搜索路径。当从顶点 s 开始，广度优先搜索到顶点 t 后，`prev` 数组中存储的就是搜索的路径。不过，这个路径是反向存储的。
+`prev[w]` 存储的是，顶点 w 是从哪个前驱顶点遍历过来的。比如，我们通过顶点 2 的邻接表访问到顶点 3，那 `prev[3]` 就等于 2。为了正
+向打印出路径，需要递归地来打印 `printPrev`。
+
+![graph_bsf1](./imgs/graph_bsf1.jpg)
+![graph_bsf2](./imgs/graph_bsf2.jpg)
+![graph_bsf3](./imgs/graph_bsf3.jpg)
+
+#### 广度优先搜索的时间、空间复杂度
+最坏情况下，终止顶点 t 离起始顶点 s 很远，需要遍历完整个图才能找到。这个时候，每个顶点都要进出一遍队列，每个边也都会被访问一次，所以，
+广度优先搜索的时间复杂度是 `O(V+E)`，其中，V 表示顶点的个数，E 表示边的个数。当然，对于一个连通图来说，也就是说一个图中的所有顶点都
+是连通的，E 肯定要大于等于 `V-1`，所以，广度优先搜索的时间复杂度也可以简写为 `O(E)`。
+
+广度优先搜索的空间消耗主要在几个辅助变量 `visited` 数组、`queue` 队列、`prev` 数组上。这三个存储空间的大小都不会超过顶点的个数，
+所以空间复杂度是 `O(V`)。
+
+### 深度优先搜索
+深度优先搜索（Depth-First-Search），简称 DFS。
+假设你站在迷宫的某个岔路口，然后想找到出口。你随意选择一个岔路口来走，走着走着发现走不通的时候，你就回退到上一个岔路口，重新选择一条路继续走，
+直到最终找到出口。这种走法就是一种**深度优先搜索策略**。
+
+![graph_dsf](./imgs/graph_dsf.jpg)
+
+图中寻找一条从顶点 s 到顶点 t 的路径，s 就可以理解为迷宫中起始的位置，t 代表出口。
+
+深度优先搜索找到的并不是顶点 s 到顶点 t 的最短路径。
+
+```go
+func (g *Graph) DSF(s, t int) {
+	if s == t {
+		return
+	}
+	// init prev 记录搜索路径
+	prev := make([]int, g.v)
+	for index := range prev {
+		prev[index] = -1
+	}
+
+	visited := make([]bool, g.v) // 记录已经被访问的顶点，避免顶点被重复访问
+	visited[s] = true  // 顶点设置为 true 表示已经被访问
+
+	g.recurse(s, t, prev, visited, false)
+
+	printPrev(prev, s, t)
+}
+
+func (g *Graph) recurse(s int, t int, prev []int, visited []bool, isFound bool) {
+
+	if isFound {
+		return
+	}
+
+	visited[s] = true
+
+	if s == t {
+		isFound = true
+		return
+	}
+
+	linkedList := g.adj[s]
+	for e := linkedList.Front(); e != nil; e = e.Next() {
+		k := e.Value.(int)
+		if !visited[k] {
+			prev[k] = s
+			g.recurse(k, t, prev, visited, false)
+		}
+	}
+
+}
+```
+
+#### 深度度优先搜索的时、空间间复杂度
+从图可以看出，每条边最多会被访问两次，一次是遍历，一次是回退。所以，图上的深度优先搜索算法的时间复杂度是 `O(E)`，E 表示边的个数。
+
+深度优先搜索算法的消耗内存主要是 visited、prev 数组和递归调用栈。visited、prev 数组的大小跟顶点的个数 V 成正比，递归调用栈的最
+大深度不会超过顶点的个数，所以总的空间复杂度就是 `O(V)`。
