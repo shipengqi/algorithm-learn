@@ -2,6 +2,7 @@
 
 - GitHub 地址：https://github.com/shipengqi/algorithm-learn
 - 在线浏览：https://www.shipengqi.top/algorithm-learn
+- 代码示例：https://github.com/shipengqi/algorithm-learn/demos
 
 ## Usage
 ```sh
