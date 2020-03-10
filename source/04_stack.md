@@ -10,46 +10,16 @@ title: 栈
 
 某个数据集合只涉及在一端插入和删除数据，并且满足后进先出、先进后出的特性，就应该首选“栈”这种数据结构。
 
-## 实现一个栈
-```go
-type ArrayStack struct {
-	items      []string // slice
-	count      int      // 栈中元素的个数
-	n          int      // 栈的 size
-}
-
-// 初始化栈
-func (a *ArrayStack) InitArrayStack(n int) {
-	a.items = []string{}
-	a.count = 0
-	a.n = n
-}
-
-// 入栈
-func (a *ArrayStack) Push(item string) bool {
-	if a.count == a.n { // 空间已满
-		return false
-	}
-	a.items = append(a.items, item)
-    a.count ++
-	return true
-}
-
-// 出栈
-func (a *ArrayStack) Pop() string {
-	if a.count == 0 { // 栈为空
-		return ""
-	}
-	fmt.Println(len(a.items), a.count)
-    item := a.items[len(a.items) - 1]
-    a.items = a.items[: len(a.items) - 1]
-    a.count --
-    return item
-}
-```
+栈既可以用数组来实现，也可以用链表来实现。用数组实现的栈，叫作**顺序栈**，用链表实现的栈，叫作**链式栈**。
 
 对于出栈操作来说，我们不会涉及内存的重新申请和数据的搬移，所以出栈的时间复杂度仍然是 `O(1)`。但是，对于入栈操作来说，情况就不一样了。
 当栈中有空闲空间时，入栈操作的时间复杂度为 `O(1)`。但当空间不够时，就需要重新申请内存和数据搬移，所以时间复杂度就变成了 `O(n)`。
+
+## 支持动态扩容的顺序栈
+基于数组实现的栈，是一个固定大小的栈，也就是说，在初始化栈时需要事先指定栈的大小。当栈满之后，就无法再往栈里添加数据了。尽管链式栈
+的大小不受限，但要存储 next 指针，内存消耗相对较多。如何基于数组实现一个可以支持动态扩容的栈？
+
+如果要实现一个支持动态扩容的栈，就需要底层依赖一个支持动态扩容的数组。
 
 ## 栈在表达式求值中的应用
 编译器如何利用栈来实现表达式求值，比如：`34+13*9+44-12/3`。

@@ -12,7 +12,7 @@ func NewFibs(n int) *Fibs {
 }
 
 func (f *Fibs) Fibonacci(n int) int {
-	if f.val[n] != 0 {
+	if f.val[n] != 0 { // 避免重复计算
 		return f.val[n]
 	}
 	if n <= 1 {

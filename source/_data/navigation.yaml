@@ -7,25 +7,25 @@ main:
   type: label
 - text: 复杂度分析
   type: link
-  path: complex_analysis.html
+  path: 01_complex_analysis.html
 - text: 数组
   type: link
-  path: array.html
+  path: 02_array.html
 - text: 链表
   type: link
-  path: list.html
+  path: 03_link_list.html
 - text: 栈
   type: link
-  path: stack.html
+  path: 04_stack.html
 - text: 队列
   type: link
-  path: queue.html
+  path: 05_queue.html
 - text: 递归
   type: link
-  path: recursion.html
+  path: 06_recursion.html
 - text: 排序
   type: link
-  path: sort.html
+  path: 07_sort.html
 - text: 线性排序
   type: link
   path: linear_sort.html

@@ -12,6 +12,7 @@ func TestLinkedListQueue_Dequeue(t *testing.T) {
 	q.Enqueue(4)
     var want int
 	t.Run("Get LinkedListQueue length", func(t *testing.T) {
+		t.Log(q)
 		if q.Length != 4 {
 			t.Fatalf("Wanted %v, got %v", 4, q.Length)
 		}
