@@ -1,12 +1,12 @@
 package sorts
 
-func CountSort( a []int)  {
+func CountSort(a []int)  {
 	num := len(a)
 	if num <= 1{
 		return
 	}
 	// 查找数组中数据的范围
-	var max int = a[0]
+	max := a[0]
 	for i := range a {
 		if a[i] > max {
 			max = a[i]

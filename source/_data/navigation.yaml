@@ -28,13 +28,13 @@ main:
   path: 07_sort.html
 - text: 线性排序
   type: link
-  path: linear_sort.html
+  path: 08_linear_sort.html
 - text: 二分查找
   type: link
-  path: binary_search.html
+  path: 09_binary_search.html
 - text: 跳表
   type: link
-  path: skip_list.html
+  path: 10_skip_list.html
 - text: 散列表
   type: link
   path: hash_table.html
