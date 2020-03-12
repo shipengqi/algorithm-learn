@@ -37,19 +37,22 @@ main:
   path: 10_skip_list.html
 - text: 散列表
   type: link
-  path: hash_table.html
+  path: 11_hash_table.html
 - text: 哈希算法
   type: link
-  path: hash_algo.html
+  path: 12_hash_algo.html
 - text: 二叉树
   type: link
-  path: binary_tree.html
+  path: 13_binary_tree.html
 - text: 堆
   type: link
-  path: heap.html
+  path: 14_heap.html
 - text: 图
   type: link
-  path: graph.html
+  path: 15_graph.html
+- text: 字符串匹配算法
+  type: link
+  path: 16_string_match_algo.html
 
 - text: THEME
   type: label
