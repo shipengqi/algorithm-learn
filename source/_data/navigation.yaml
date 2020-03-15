@@ -53,6 +53,12 @@ main:
 - text: 字符串匹配算法
   type: link
   path: 16_string_match_algo.html
+- text: Trie 树
+  type: link
+  path: 17_trie.html
+- text: AC 自动机
+  type: link
+  path: 18_ac.html
 
 - text: THEME
   type: label
