@@ -1,12 +1,12 @@
 package trees
 
-type TreeNode struct {
+type BTreeNode struct {
 	Value        int
-	Left         *TreeNode
-	Right        *TreeNode
+	Left         *BTreeNode
+	Right        *BTreeNode
 }
 
-func PreOrderTraversal(root *TreeNode) []int {
+func PreOrderTraversal(root *BTreeNode) []int {
 	if root == nil {
 		return nil
 	}
@@ -15,7 +15,7 @@ func PreOrderTraversal(root *TreeNode) []int {
     	return []int{root.Value}
 	}
 	var res []int
-	var stack []*TreeNode
+	var stack []*BTreeNode
 	stack = append(stack, root)
 
 	for len(stack) != 0 {
@@ -32,7 +32,7 @@ func PreOrderTraversal(root *TreeNode) []int {
 	return []int{}
 }
 
-func InOrderTraversal(root *TreeNode) []int {
+func InOrderTraversal(root *BTreeNode) []int {
 	if root == nil {
 		return nil
 	}
@@ -46,7 +46,7 @@ func InOrderTraversal(root *TreeNode) []int {
     return res
 }
 
-func PostOrderTraversal(root *TreeNode) []int {
+func PostOrderTraversal(root *BTreeNode) []int {
 	if root == nil {
 		return nil
 	}

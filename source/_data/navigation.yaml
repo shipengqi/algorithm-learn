@@ -7,49 +7,58 @@ main:
   type: label
 - text: 复杂度分析
   type: link
-  path: complex_analysis.html
+  path: 01_complex_analysis.html
 - text: 数组
   type: link
-  path: array.html
+  path: 02_array.html
 - text: 链表
   type: link
-  path: list.html
+  path: 03_link_list.html
 - text: 栈
   type: link
-  path: stack.html
+  path: 04_stack.html
 - text: 队列
   type: link
-  path: queue.html
+  path: 05_queue.html
 - text: 递归
   type: link
-  path: recursion.html
+  path: 06_recursion.html
 - text: 排序
   type: link
-  path: sort.html
+  path: 07_sort.html
 - text: 线性排序
   type: link
-  path: linear_sort.html
+  path: 08_linear_sort.html
 - text: 二分查找
   type: link
-  path: binary_search.html
+  path: 09_binary_search.html
 - text: 跳表
   type: link
-  path: skip_list.html
+  path: 10_skip_list.html
 - text: 散列表
   type: link
-  path: hash_table.html
+  path: 11_hash_table.html
 - text: 哈希算法
   type: link
-  path: hash_algo.html
+  path: 12_hash_algo.html
 - text: 二叉树
   type: link
-  path: binary_tree.html
+  path: 13_binary_tree.html
 - text: 堆
   type: link
-  path: heap.html
+  path: 14_heap.html
 - text: 图
   type: link
-  path: graph.html
+  path: 15_graph.html
+- text: 字符串匹配算法
+  type: link
+  path: 16_string_match_algo.html
+- text: Trie 树
+  type: link
+  path: 17_trie.html
+- text: AC 自动机
+  type: link
+  path: 18_ac.html
 
 - text: THEME
   type: label
