@@ -2,19 +2,9 @@
 .idea
 .vscode
 
-# Static
-db.json
 public
-themes/doc
-
-# Node
-node_modules
-.deploy_git
 
 # logs
 *.log
 logs
 log
-
-# dist
-docs/.vuepress/dist
