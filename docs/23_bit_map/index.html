@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en" dir=>
+
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="爬虫 URL 去重#爬虫的工作原理是，通过解析已经爬取页面中的网页链接，然后再爬取这些链接对应的网页。搜索引擎的爬虫系统会爬取几十亿、上百亿的 网页。如何实现 url 去重，避免重复爬取网页。
+思路很简单：记录已经爬取的 url。
+解析#要记录已经爬取的 url，那么使用什么数据结构来存储。这里涉及到两个操作，添加和查询 url。
+散列表，红黑树，跳表都可以实现快速的插入和查找。
+散列表#  内存空间占用大 使用散列表存储，如果爬取 10 亿个 url，假设一个 url 长度为 64 bytes，那么存储 10 亿个 url 至少需要大约 60 GB 的内存。 而且散列表要维持较小的装载因子，以免过多出现散列冲突，导致性能下降。而且如果用链表法解决冲突，还要存储链表指针。 所以散列表存储 10 亿 url 需要内存远大于 60 GB，甚至超过 100 GB。
+  查询耗时 如果基于链表法解决冲突，散列表中存储的是 URL，那当查询的时候，通过哈希函数定位到某个链表之后，还需要依次比对每个链表中 的 URL。链表中的结点在内存中不是连续存储的，所以不能一下子加载到 CPU 缓存中，没法很好地利用到 CPU 高速缓存，所以数据访 问性能方面会打折扣。
+  字符串匹配耗时 链表中的每个数据都是 URL，而 URL 平均长度为 64 字节的字符串，要让待判重的 URL，跟链表中的每个 URL，做字符串匹配。比较耗时。">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="位图" />
+<meta property="og:description" content="爬虫 URL 去重#爬虫的工作原理是，通过解析已经爬取页面中的网页链接，然后再爬取这些链接对应的网页。搜索引擎的爬虫系统会爬取几十亿、上百亿的 网页。如何实现 url 去重，避免重复爬取网页。
+思路很简单：记录已经爬取的 url。
+解析#要记录已经爬取的 url，那么使用什么数据结构来存储。这里涉及到两个操作，添加和查询 url。
+散列表，红黑树，跳表都可以实现快速的插入和查找。
+散列表#  内存空间占用大 使用散列表存储，如果爬取 10 亿个 url，假设一个 url 长度为 64 bytes，那么存储 10 亿个 url 至少需要大约 60 GB 的内存。 而且散列表要维持较小的装载因子，以免过多出现散列冲突，导致性能下降。而且如果用链表法解决冲突，还要存储链表指针。 所以散列表存储 10 亿 url 需要内存远大于 60 GB，甚至超过 100 GB。
+  查询耗时 如果基于链表法解决冲突，散列表中存储的是 URL，那当查询的时候，通过哈希函数定位到某个链表之后，还需要依次比对每个链表中 的 URL。链表中的结点在内存中不是连续存储的，所以不能一下子加载到 CPU 缓存中，没法很好地利用到 CPU 高速缓存，所以数据访 问性能方面会打折扣。
+  字符串匹配耗时 链表中的每个数据都是 URL，而 URL 平均长度为 64 字节的字符串，要让待判重的 URL，跟链表中的每个 URL，做字符串匹配。比较耗时。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://shipengqi.github.io/algorithm-learn/docs/23_bit_map/" />
+<meta property="article:modified_time" content="2020-06-18T17:06:12+08:00" />
+<title>位图 | Algorithm Learning</title>
+<link rel="manifest" href="/algorithm-learn/manifest.json">
+<link rel="icon" href="/algorithm-learn/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/algorithm-learn/book.min.b3215d9d1d18d9051e7fbe8f256ff80e30f41d29073b86348e230d297b771002.css" integrity="sha256-syFdnR0Y2QUef76PJW/4DjD0HSkHO4Y0jiMNKXt3EAI=">
+<script defer src="/algorithm-learn/en.search.min.511cae842a1aa3c6a84d63e20bade0ff9213702b34b6fe826804dc6e1b02a9e3.js" integrity="sha256-URyuhCoao8aoTWPiC63g/5ITcCs0tv6CaATcbhsCqeM="></script>
+
+<script defer src="/algorithm-learn/sw.min.eaff391435f87073ec5af42687d96b565bbf32cc51b0c17648cd12c7d96f6307.js" integrity="sha256-6v85FDX4cHPsWvQmh9lrVlu/MsxRsMF2SM0Sx9lvYwc="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir=>
+  <input type="checkbox" class="hidden" id="menu-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  <nav>
+<h2 class="book-brand">
+  <a href="/algorithm-learn"><span>Algorithm Learning</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/shipengqi/algorithm-learn" target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+  <li>
+    <a href="https://shipengqi.github.io/" target="_blank" rel="noopener">
+        Blog
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+
+  <p>━━━━━━━━━━━━━━━━━━━━</p>
+<ul>
+<li><a href="/algorithm-learn/docs/01_complex_analysis/">复杂度分析</a></li>
+<li><a href="/algorithm-learn/docs/02_array/">数组</a></li>
+<li><a href="/algorithm-learn/docs/03_link_list/">链表</a></li>
+<li><a href="/algorithm-learn/docs/04_stack/">栈</a></li>
+<li><a href="/algorithm-learn/docs/05_queue/">队列</a></li>
+<li><a href="/algorithm-learn/docs/06_recursion/">递归</a></li>
+<li><a href="/algorithm-learn/docs/07_sort/">排序</a></li>
+<li><a href="/algorithm-learn/docs/08_linear_sort/">线性排序</a></li>
+<li><a href="/algorithm-learn/docs/09_binary_search/">二分查找</a></li>
+<li><a href="/algorithm-learn/docs/10_skip_list/">跳表</a></li>
+<li><a href="/algorithm-learn/docs/11_hash_table/">散列表</a></li>
+<li><a href="/algorithm-learn/docs/12_hash_algo/">哈希算法</a></li>
+<li><a href="/algorithm-learn/docs/13_binary_tree/">二叉树</a></li>
+<li><a href="/algorithm-learn/docs/14_heap/">堆</a></li>
+<li><a href="/algorithm-learn/docs/15_graph/">图</a></li>
+<li><a href="/algorithm-learn/docs/16_string_match_algo/">字符串匹配算法</a></li>
+<li><a href="/algorithm-learn/docs/17_trie/">Trie 树</a></li>
+<li><a href="/algorithm-learn/docs/18_ac/">AC 自动机</a></li>
+<li><a href="/algorithm-learn/docs/19_greedy/">贪心算法</a></li>
+<li><a href="/algorithm-learn/docs/20_deivide_conquer/">分治算法</a></li>
+<li><a href="/algorithm-learn/docs/21_backtracking/">回溯算法</a></li>
+<li><a href="/algorithm-learn/docs/22_dynamic_programming/">动态规划</a></li>
+<li><a href="/algorithm-learn/docs/23_bit_map/"class=active>位图</a></li>
+<li><a href="/algorithm-learn/docs/24_bmore_tree/">索引</a></li>
+<li><a href="/algorithm-learn/docs/25_vector/">向量空间</a>
+<!-- raw HTML omitted --></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/algorithm-learn/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>位图</strong>
+
+  <label for="toc-control">
+    
+    <img src="/algorithm-learn/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+    <input type="checkbox" class="hidden" id="toc-control" />
+    <aside class="hidden clearfix">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#爬虫-url-去重">爬虫 URL 去重</a></li>
+    <li><a href="#解析">解析</a>
+      <ul>
+        <li><a href="#散列表">散列表</a></li>
+        <li><a href="#位图">位图</a></li>
+        <li><a href="#布隆过滤器">布隆过滤器</a></li>
+      </ul>
+    </li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
+
+
+    </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h2 id="爬虫-url-去重">
+  爬虫 URL 去重
+  <a class="anchor" href="#%e7%88%ac%e8%99%ab-url-%e5%8e%bb%e9%87%8d">#</a>
+</h2>
+<p>爬虫的工作原理是，通过解析已经爬取页面中的网页链接，然后再爬取这些链接对应的网页。搜索引擎的爬虫系统会爬取几十亿、上百亿的
+网页。如何实现 url 去重，避免重复爬取网页。</p>
+<p>思路很简单：记录已经爬取的 url。</p>
+<h2 id="解析">
+  解析
+  <a class="anchor" href="#%e8%a7%a3%e6%9e%90">#</a>
+</h2>
+<p>要记录已经爬取的 url，那么使用什么数据结构来存储。这里涉及到两个操作，添加和查询 url。</p>
+<p>散列表，红黑树，跳表都可以实现快速的插入和查找。</p>
+<h3 id="散列表">
+  散列表
+  <a class="anchor" href="#%e6%95%a3%e5%88%97%e8%a1%a8">#</a>
+</h3>
+<ol>
+<li>
+<p>内存空间占用大
+使用散列表存储，如果爬取 10 亿个 url，假设一个 url 长度为 64 bytes，那么存储 10 亿个 url 至少需要大约 60 GB 的内存。
+而且散列表要维持较小的装载因子，以免过多出现散列冲突，导致性能下降。而且如果用链表法解决冲突，还要存储链表指针。
+所以散列表存储 10 亿 url 需要内存远大于 60 GB，甚至超过 100 GB。</p>
+</li>
+<li>
+<p>查询耗时
+如果基于链表法解决冲突，散列表中存储的是 URL，那当查询的时候，通过哈希函数定位到某个链表之后，还需要依次比对每个链表中
+的 URL。链表中的结点在内存中不是连续存储的，所以不能一下子加载到 CPU 缓存中，没法很好地利用到 CPU 高速缓存，所以数据访
+问性能方面会打折扣。</p>
+</li>
+<li>
+<p>字符串匹配耗时
+链表中的每个数据都是 URL，而 URL 平均长度为 64 字节的字符串，要让待判重的 URL，跟链表中的每个 URL，做字符串匹配。比较耗时。</p>
+</li>
+</ol>
+<h3 id="位图">
+  位图
+  <a class="anchor" href="#%e4%bd%8d%e5%9b%be">#</a>
+</h3>
+<p>如果有 1 千万个整数，整数的范围在 1 到 1 亿之间。如何快速查找某个整数是否在这 1 千万个整数中？
+申请一个大小为 1 亿、数据类型为布尔类型（true 或者 false）的数组。将这 1 千万个整数作为数组下标，将对应的数组值设置成 true。
+比如，整数 5 对应下标为 5 的数组值设置为 true，也就是 <code>array[5] = true</code>。</p>
+<p>当查询某个整数 K 是否在这 1 千万个整数中的时候，只需要将对应的数组值 <code>array[K]</code> 取出来，看是否等于 true。如果等于 true，
+那说明 1 千万整数中包含这个整数 K；相反，就表示不包含这个整数 K。</p>
+<p>大部分语言的布尔类型，大小是 1 个字节的，并不能节省太多内存空间。实际上，表示 true 和 false 两个值，只需要用一个二进
+制位（bit）就可以了。</p>
+<p>可以借助编程语言中提供的数据类型，比如 int、long、char 等类型，通过<strong>位运算</strong>，用其中的某个位表示某个数字。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// BitMap implement bitmap
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">BitMap</span> []<span style="color:#66d9ef">byte</span>
+
+<span style="color:#75715e">// New create BitMap
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">New</span>(<span style="color:#a6e22e">length</span> <span style="color:#66d9ef">uint</span>) <span style="color:#a6e22e">BitMap</span> {
+	<span style="color:#66d9ef">return</span> make([]<span style="color:#66d9ef">byte</span>, <span style="color:#a6e22e">length</span><span style="color:#f92672">/</span><span style="color:#ae81ff">8</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+}
+
+<span style="color:#75715e">// Set set value in bitmap
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">b</span> <span style="color:#a6e22e">BitMap</span>) <span style="color:#a6e22e">Set</span>(<span style="color:#a6e22e">value</span> <span style="color:#66d9ef">uint</span>) {
+	<span style="color:#a6e22e">byteIndex</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">8</span>
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">byteIndex</span> <span style="color:#f92672">&gt;=</span> uint(len(<span style="color:#a6e22e">b</span>)) {
+		<span style="color:#66d9ef">return</span>
+	}
+	<span style="color:#a6e22e">bitIndex</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">8</span>
+	[]byte(<span style="color:#a6e22e">b</span>)[<span style="color:#a6e22e">byteIndex</span>] <span style="color:#f92672">|=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#a6e22e">bitIndex</span>
+}
+
+<span style="color:#75715e">// Get check whether value exist or not
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">b</span> <span style="color:#a6e22e">BitMap</span>) <span style="color:#a6e22e">Get</span>(<span style="color:#a6e22e">value</span> <span style="color:#66d9ef">uint</span>) <span style="color:#66d9ef">bool</span> {
+	<span style="color:#a6e22e">byteIndex</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">/</span> <span style="color:#ae81ff">8</span>
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">byteIndex</span> <span style="color:#f92672">&gt;=</span> uint(len(<span style="color:#a6e22e">b</span>)) {
+		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span>
+	}
+	<span style="color:#a6e22e">bitIndex</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">8</span>
+	<span style="color:#66d9ef">return</span> []byte(<span style="color:#a6e22e">b</span>)[<span style="color:#a6e22e">byteIndex</span>]<span style="color:#f92672">&amp;</span>(<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span><span style="color:#a6e22e">bitIndex</span>) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>
+}
+</code></pre></div><p>如果用散列表存储这 1 千万的数据，数据是 32 位的整型数，也就是需要 4 个字节的存储空间，那总共至少需要 40MB 的存储空间。如果通过位图
+的话，数字范围在 1 到 1 亿之间，只需要 1 亿个二进制位，也就是 12MB 左右的存储空间就够了。</p>
+<h4 id="使用位图的问题">
+  使用位图的问题
+  <a class="anchor" href="#%e4%bd%bf%e7%94%a8%e4%bd%8d%e5%9b%be%e7%9a%84%e9%97%ae%e9%a2%98">#</a>
+</h4>
+<p>如果数字的范围很大，比如刚刚那个问题，数字范围是 1 到 10 亿，那位图的大小就是 10 亿个二进制位，也就是 120MB 的大小，消耗的内存空间，
+不降反增。</p>
+<h3 id="布隆过滤器">
+  布隆过滤器
+  <a class="anchor" href="#%e5%b8%83%e9%9a%86%e8%bf%87%e6%bb%a4%e5%99%a8">#</a>
+</h3>
+<p>布隆过滤器是基于位图改进的，就是为了解决位图内存消耗的问题。</p>
+<p>还是数据个数是 1 千万，数据的范围是 1 到 10 亿。布隆过滤器的做法是，仍然使用一个 1 亿个二进制大小的位图，然后通过哈希函数，对数
+字进行处理，让它落在这 1 到 1 亿范围内。</p>
+<h4 id="哈希冲突问题">
+  哈希冲突问题
+  <a class="anchor" href="#%e5%93%88%e5%b8%8c%e5%86%b2%e7%aa%81%e9%97%ae%e9%a2%98">#</a>
+</h4>
+<p>哈希函数会存在冲突的问题，布隆过滤器的处理方法。既然<strong>一个哈希函数可能会存在冲突，那用多个哈希函数一块儿定位一个数据</strong>。
+使用 K 个哈希函数，对同一个数字进行求哈希值，那会得到 K 个不同的哈希值，我们分别记作 X1，X2，X3，…，XK。把这 K 个数字作为位图中的下
+标，将对应的 <code>BitMap[X1]</code>，<code>BitMap[X2]</code>，<code>BitMap[X3]</code>，…，<code>BitMap[XK]</code>都设置成 true，也就是说，<strong>用 K 个二进制位，来表示一个
+数字的存在</strong>。</p>
+<p><img src="../../images/bloom1.jpg" alt="" /></p>
+<p>查询某个数字是否存在的时候，用同样的 K 个哈希函数，对这个数字求哈希值，看这 K 个哈希值，对应位图中的数值是否都为 true，如果都是 true，
+则说明，这个数字存在，如果有其中任意一个不为 true，那就说明这个数字不存在。</p>
+<h4 id="误判问题">
+  误判问题
+  <a class="anchor" href="#%e8%af%af%e5%88%a4%e9%97%ae%e9%a2%98">#</a>
+</h4>
+<p>使用多个哈希函数的处理方式，容易发生误判的问题。</p>
+<p><img src="../../images/bloom2.jpg" alt="" /></p>
+<p>如果某个数字经过<strong>布隆过滤器判断不存在，那说明这个数字真的不存在</strong>；如果某个数字经过<strong>布隆过滤器判断存在，这个时候才会有可能误判，有可
+能并不存在</strong>。</p>
+<h2 id="总结">
+  总结
+  <a class="anchor" href="#%e6%80%bb%e7%bb%93">#</a>
+</h2>
+<p>虽然布隆过滤器会存在误判，但是，这并不影响它发挥大作用。很多场景对误判有一定的容忍度。比如爬虫判重这个问题，即便一个没有被爬取过的网页，
+被误判为已经被爬取，对于搜索引擎来说，也并不是什么大事情，是可以容忍的，毕竟网页太多了，搜索引擎也不可能 100% 都爬取到。</p>
+<p>假设需要判重的网页有 10 亿，可以用一个 10 倍大小的位图来存储，也就是 100 亿个二进制位，换算成字节，那就是大约 1.2GB。如果用散列表判
+重，需要至少 100GB 的空间。布隆过滤器在存储空间的消耗上，降低了非常多。</p>
+<p>布隆过滤器用多个哈希函数对同一个网页链接进行处理，只需要将网页链接从内存中读取一次，进行多次哈希计算，理论上讲这组操作是 CPU 密集
+型的。而在散列表的处理方式中，需要读取散列冲突拉链的多个网页链接，分别跟待判重的网页链接，进行字符串匹配。这个操作涉及很多内存数据
+的读取，所以是内存密集型的。CPU 计算可能是要比内存访问更快速的，所以，理论上讲，布隆过滤器的判重方式，更加快速。</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+  <div><a class="flex align-center" href="https://github.com/shipengqi/algorithm-learn/commit/f0affa43a408758a4a1a44d5288e6e0087d8415f" title='Last modified by shipengqi | June 18, 2020' target="_blank" rel="noopener">
+      <img src="/algorithm-learn/svg/calendar.svg" class="book-icon" alt="Calendar" />
+      <span>June 18, 2020</span>
+    </a>
+  </div>
+
+
+
+  <div>
+    <a class="flex align-center" href="https://github.com/shipengqi/algorithm-learn/edit/master/content//docs/23_bit_map.md" target="_blank" rel="noopener">
+      <img src="/algorithm-learn/svg/edit.svg" class="book-icon" alt="Edit" />
+      <span>Edit this page</span>
+    </a>
+  </div>
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#爬虫-url-去重">爬虫 URL 去重</a></li>
+    <li><a href="#解析">解析</a>
+      <ul>
+        <li><a href="#散列表">散列表</a></li>
+        <li><a href="#位图">位图</a></li>
+        <li><a href="#布隆过滤器">布隆过滤器</a></li>
+      </ul>
+    </li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

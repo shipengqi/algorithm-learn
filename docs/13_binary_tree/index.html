@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" dir=>
+
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="树#栈、队列等都是线性表结构，树，一种非线性表结构，这种数据结构比线性表的数据结构要复杂得多。
+树的每个元素叫作节点，用来连线相邻节点之间的关系，叫作父子关系。
+A 节点就是 B 节点的父节点，B 节点是 A 节点的子节点。B、C、D 这三个节点的父节点是同一个节点，所以它们之间互 称为兄弟节点。没有父节点的节点叫作根节点，也就是节点 E。没有子节点的节点叫作叶子节点或者叶节点， G、H、I、J、K、L 都是叶子节点。
+“树” 的三个比较相似的概念：高度（Height）、深度（Depth）、层（Level）。
+二叉树#二叉树是最常用的树结构。
+二叉树，就是每个节点最多有两个“叉”，也就是两个子节点，分别是左子节点和右子节点。不过，二叉树并不要求每个节点都有两个子节点， 有的节点只有左子节点，有的节点只有右子节点。
+ 编号 2，叶子节点全都在最底层，除了叶子节点之外，每个节点都有左右两个子节点，这种二叉树就叫作满二叉树。 编号 3 ，叶子节点都在最底下两层，最后一层的叶子节点都靠左排列，并且除了最后一层，其他层的节点个数都要达到最大， 这种二叉树叫作完全二叉树。  二叉树的存储#为什么把最后一层的叶子节点靠左排列的叫完全二叉树？
+二叉树的存储方法：
+ 基于指针或者引用的二叉链式存储法。 基于数组的顺序存储法。  链式存储法#上图是链式存储法，每个节点有三个字段，其中一个存储数据，另外两个是指向左右子节点的指针。只要拎住根节点，就可以通过左右子节点 的指针，把整棵树都串起来。这种存储方式比较常用。大部分二叉树代码都是通过这种结构来实现的。
+顺序存储法#上图是顺序存储法，节点 X 存储在数组中下标为 i 的位置，下标为 2 * i 的位置存储的就是左子节点，下标为 2 * i &#43; 1 的位置存储 的就是右子节点。反过来，下标为 i/2 的位置存储就是它的父节点。只要知道根节点存储的位置，就可以把整棵树都串起来。
+但是基于数组的顺序存储法，如果是非完全二叉树，其实会浪费比较多的数组存储空间。比如下面途中的例子：
+如果某棵二叉树是一棵完全二叉树，那用数组存储无疑是最节省内存的一种方式。因为数组的存储方式并不需要存储额外的左右子节点的指针。 这就是为什么完全二叉树要求最后一层的子节点都靠左的原因。">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="树" />
+<meta property="og:description" content="树#栈、队列等都是线性表结构，树，一种非线性表结构，这种数据结构比线性表的数据结构要复杂得多。
+树的每个元素叫作节点，用来连线相邻节点之间的关系，叫作父子关系。
+A 节点就是 B 节点的父节点，B 节点是 A 节点的子节点。B、C、D 这三个节点的父节点是同一个节点，所以它们之间互 称为兄弟节点。没有父节点的节点叫作根节点，也就是节点 E。没有子节点的节点叫作叶子节点或者叶节点， G、H、I、J、K、L 都是叶子节点。
+“树” 的三个比较相似的概念：高度（Height）、深度（Depth）、层（Level）。
+二叉树#二叉树是最常用的树结构。
+二叉树，就是每个节点最多有两个“叉”，也就是两个子节点，分别是左子节点和右子节点。不过，二叉树并不要求每个节点都有两个子节点， 有的节点只有左子节点，有的节点只有右子节点。
+ 编号 2，叶子节点全都在最底层，除了叶子节点之外，每个节点都有左右两个子节点，这种二叉树就叫作满二叉树。 编号 3 ，叶子节点都在最底下两层，最后一层的叶子节点都靠左排列，并且除了最后一层，其他层的节点个数都要达到最大， 这种二叉树叫作完全二叉树。  二叉树的存储#为什么把最后一层的叶子节点靠左排列的叫完全二叉树？
+二叉树的存储方法：
+ 基于指针或者引用的二叉链式存储法。 基于数组的顺序存储法。  链式存储法#上图是链式存储法，每个节点有三个字段，其中一个存储数据，另外两个是指向左右子节点的指针。只要拎住根节点，就可以通过左右子节点 的指针，把整棵树都串起来。这种存储方式比较常用。大部分二叉树代码都是通过这种结构来实现的。
+顺序存储法#上图是顺序存储法，节点 X 存储在数组中下标为 i 的位置，下标为 2 * i 的位置存储的就是左子节点，下标为 2 * i &#43; 1 的位置存储 的就是右子节点。反过来，下标为 i/2 的位置存储就是它的父节点。只要知道根节点存储的位置，就可以把整棵树都串起来。
+但是基于数组的顺序存储法，如果是非完全二叉树，其实会浪费比较多的数组存储空间。比如下面途中的例子：
+如果某棵二叉树是一棵完全二叉树，那用数组存储无疑是最节省内存的一种方式。因为数组的存储方式并不需要存储额外的左右子节点的指针。 这就是为什么完全二叉树要求最后一层的子节点都靠左的原因。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://shipengqi.github.io/algorithm-learn/docs/13_binary_tree/" />
+<meta property="article:modified_time" content="2020-06-18T17:06:12+08:00" />
+<title>树 | Algorithm Learning</title>
+<link rel="manifest" href="/algorithm-learn/manifest.json">
+<link rel="icon" href="/algorithm-learn/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/algorithm-learn/book.min.b3215d9d1d18d9051e7fbe8f256ff80e30f41d29073b86348e230d297b771002.css" integrity="sha256-syFdnR0Y2QUef76PJW/4DjD0HSkHO4Y0jiMNKXt3EAI=">
+<script defer src="/algorithm-learn/en.search.min.511cae842a1aa3c6a84d63e20bade0ff9213702b34b6fe826804dc6e1b02a9e3.js" integrity="sha256-URyuhCoao8aoTWPiC63g/5ITcCs0tv6CaATcbhsCqeM="></script>
+
+<script defer src="/algorithm-learn/sw.min.eaff391435f87073ec5af42687d96b565bbf32cc51b0c17648cd12c7d96f6307.js" integrity="sha256-6v85FDX4cHPsWvQmh9lrVlu/MsxRsMF2SM0Sx9lvYwc="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir=>
+  <input type="checkbox" class="hidden" id="menu-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  <nav>
+<h2 class="book-brand">
+  <a href="/algorithm-learn"><span>Algorithm Learning</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/shipengqi/algorithm-learn" target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+  <li>
+    <a href="https://shipengqi.github.io/" target="_blank" rel="noopener">
+        Blog
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+
+  <p>━━━━━━━━━━━━━━━━━━━━</p>
+<ul>
+<li><a href="/algorithm-learn/docs/01_complex_analysis/">复杂度分析</a></li>
+<li><a href="/algorithm-learn/docs/02_array/">数组</a></li>
+<li><a href="/algorithm-learn/docs/03_link_list/">链表</a></li>
+<li><a href="/algorithm-learn/docs/04_stack/">栈</a></li>
+<li><a href="/algorithm-learn/docs/05_queue/">队列</a></li>
+<li><a href="/algorithm-learn/docs/06_recursion/">递归</a></li>
+<li><a href="/algorithm-learn/docs/07_sort/">排序</a></li>
+<li><a href="/algorithm-learn/docs/08_linear_sort/">线性排序</a></li>
+<li><a href="/algorithm-learn/docs/09_binary_search/">二分查找</a></li>
+<li><a href="/algorithm-learn/docs/10_skip_list/">跳表</a></li>
+<li><a href="/algorithm-learn/docs/11_hash_table/">散列表</a></li>
+<li><a href="/algorithm-learn/docs/12_hash_algo/">哈希算法</a></li>
+<li><a href="/algorithm-learn/docs/13_binary_tree/"class=active>二叉树</a></li>
+<li><a href="/algorithm-learn/docs/14_heap/">堆</a></li>
+<li><a href="/algorithm-learn/docs/15_graph/">图</a></li>
+<li><a href="/algorithm-learn/docs/16_string_match_algo/">字符串匹配算法</a></li>
+<li><a href="/algorithm-learn/docs/17_trie/">Trie 树</a></li>
+<li><a href="/algorithm-learn/docs/18_ac/">AC 自动机</a></li>
+<li><a href="/algorithm-learn/docs/19_greedy/">贪心算法</a></li>
+<li><a href="/algorithm-learn/docs/20_deivide_conquer/">分治算法</a></li>
+<li><a href="/algorithm-learn/docs/21_backtracking/">回溯算法</a></li>
+<li><a href="/algorithm-learn/docs/22_dynamic_programming/">动态规划</a></li>
+<li><a href="/algorithm-learn/docs/23_bit_map/">位图</a></li>
+<li><a href="/algorithm-learn/docs/24_bmore_tree/">索引</a></li>
+<li><a href="/algorithm-learn/docs/25_vector/">向量空间</a>
+<!-- raw HTML omitted --></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/algorithm-learn/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>树</strong>
+
+  <label for="toc-control">
+    
+    <img src="/algorithm-learn/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+    <input type="checkbox" class="hidden" id="toc-control" />
+    <aside class="hidden clearfix">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#二叉树">二叉树</a>
+      <ul>
+        <li><a href="#二叉树的存储">二叉树的存储</a></li>
+        <li><a href="#二叉树的遍历">二叉树的遍历</a></li>
+      </ul>
+    </li>
+    <li><a href="#二叉查找树">二叉查找树</a>
+      <ul>
+        <li><a href="#查找">查找</a></li>
+        <li><a href="#插入">插入</a></li>
+        <li><a href="#删除">删除</a></li>
+        <li><a href="#支持重复数据的二叉查找树">支持重复数据的二叉查找树</a></li>
+        <li><a href="#二叉查找树的时间复杂度">二叉查找树的时间复杂度</a></li>
+        <li><a href="#二叉查找树和散列表">二叉查找树和散列表</a></li>
+      </ul>
+    </li>
+    <li><a href="#红黑树">红黑树</a>
+      <ul>
+        <li><a href="#平衡二叉查找树">平衡二叉查找树</a></li>
+        <li><a href="#红黑树-1">红黑树</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+    </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h1 id="树">
+  树
+  <a class="anchor" href="#%e6%a0%91">#</a>
+</h1>
+<p>栈、队列等都是线性表结构，<strong>树</strong>，一种非线性表结构，这种数据结构比线性表的数据结构要复杂得多。</p>
+<p><img src="../../images/trees1.jpg" alt="trees1" /></p>
+<p>树的每个元素叫作<strong>节点</strong>，用来连线相邻节点之间的关系，叫作<strong>父子关系</strong>。</p>
+<p><img src="../../images/trees2.jpg" alt="trees2" /></p>
+<p>A 节点就是 B 节点的<strong>父节点</strong>，B 节点是 A 节点的<strong>子节点</strong>。B、C、D 这三个节点的父节点是同一个节点，所以它们之间互
+称为<strong>兄弟节点</strong>。没有父节点的节点叫作<strong>根节点</strong>，也就是节点 E。<strong>没有子节点的节点</strong>叫作<strong>叶子节点</strong>或者<strong>叶节点</strong>，
+G、H、I、J、K、L 都是叶子节点。</p>
+<p>“树” 的三个比较相似的概念：高度（Height）、深度（Depth）、层（Level）。</p>
+<p><img src="../../images/trees3.jpg" alt="trees3" /></p>
+<h2 id="二叉树">
+  二叉树
+  <a class="anchor" href="#%e4%ba%8c%e5%8f%89%e6%a0%91">#</a>
+</h2>
+<p>二叉树是最常用的树结构。</p>
+<p>二叉树，就是每个节点<strong>最多有两个“叉”，也就是两个子节点</strong>，分别是左子节点和右子节点。不过，二叉树并不要求每个节点都有两个子节点，
+有的节点只有左子节点，有的节点只有右子节点。</p>
+<p><img src="../../images/trees4.jpg" alt="trees4" /></p>
+<ul>
+<li>编号 2，叶子节点全都在最底层，除了叶子节点之外，每个节点都有左右两个子节点，这种二叉树就叫作<strong>满二叉树</strong>。</li>
+<li>编号 3 ，叶子节点都在最底下两层，最后一层的叶子节点都靠左排列，并且除了最后一层，其他层的节点个数都要达到最大，
+这种二叉树叫作<strong>完全二叉树</strong>。</li>
+</ul>
+<h3 id="二叉树的存储">
+  二叉树的存储
+  <a class="anchor" href="#%e4%ba%8c%e5%8f%89%e6%a0%91%e7%9a%84%e5%ad%98%e5%82%a8">#</a>
+</h3>
+<p>为什么把最后一层的叶子节点靠左排列的叫完全二叉树？</p>
+<p>二叉树的存储方法：</p>
+<ul>
+<li>基于指针或者引用的二叉链式存储法。</li>
+<li>基于数组的顺序存储法。</li>
+</ul>
+<h4 id="链式存储法">
+  链式存储法
+  <a class="anchor" href="#%e9%93%be%e5%bc%8f%e5%ad%98%e5%82%a8%e6%b3%95">#</a>
+</h4>
+<p><img src="../../images/trees5.jpg" alt="trees5" /></p>
+<p>上图是链式存储法，每个节点有三个字段，其中一个存储数据，另外两个是指向左右子节点的指针。只要拎住根节点，就可以通过左右子节点
+的指针，把整棵树都串起来。这种存储方式比较常用。大部分二叉树代码都是通过这种结构来实现的。</p>
+<h4 id="顺序存储法">
+  顺序存储法
+  <a class="anchor" href="#%e9%a1%ba%e5%ba%8f%e5%ad%98%e5%82%a8%e6%b3%95">#</a>
+</h4>
+<p><img src="../../images/tress6.jpg" alt="trees6" /></p>
+<p>上图是顺序存储法，节点 X 存储在数组中下标为 i 的位置，下标为 <code>2 * i</code> 的位置存储的就是左子节点，下标为 <code>2 * i + 1</code> 的位置存储
+的就是右子节点。反过来，下标为 <code>i/2</code> 的位置存储就是它的父节点。只要知道根节点存储的位置，就可以把整棵树都串起来。</p>
+<p>但是基于数组的顺序存储法，如果是<strong>非完全二叉树，其实会浪费比较多的数组存储空间</strong>。比如下面途中的例子：</p>
+<p><img src="../../images/trees7.jpg" alt="trees7" /></p>
+<p>如果某棵二叉树是一棵完全二叉树，那用数组存储无疑是最节省内存的一种方式。因为数组的存储方式并不需要存储额外的左右子节点的指针。
+这就是为什么完全二叉树要求最后一层的子节点都靠左的原因。</p>
+<p><strong>堆其实就是一种完全二叉树，最常用的存储方式就是数组</strong>。</p>
+<h3 id="二叉树的遍历">
+  二叉树的遍历
+  <a class="anchor" href="#%e4%ba%8c%e5%8f%89%e6%a0%91%e7%9a%84%e9%81%8d%e5%8e%86">#</a>
+</h3>
+<p>遍历方法有三种：</p>
+<ul>
+<li>前序遍历是指，对于树中的任意节点来说，先打印这个节点，然后再打印它的左子树，最后打印它的右子树。</li>
+<li>中序遍历是指，对于树中的任意节点来说，先打印它的左子树，然后再打印它本身，最后打印它的右子树。</li>
+<li>后序遍历是指，对于树中的任意节点来说，先打印它的左子树，然后再打印它的右子树，最后打印这个节点本身。</li>
+</ul>
+<p><img src="../../images/tree_traversal.jpg" alt="tree_traversal" /></p>
+<p>每个节点最多会被访问两次，所以遍历操作的时间复杂度，跟节点的个数 n 成正比，也就是说二叉树遍历的时间复杂度是 <code>O(n)</code>。</p>
+<h2 id="二叉查找树">
+  二叉查找树
+  <a class="anchor" href="#%e4%ba%8c%e5%8f%89%e6%9f%a5%e6%89%be%e6%a0%91">#</a>
+</h2>
+<p>二叉查找树是二叉树中最常用的一种类型，也叫<strong>二叉搜索树</strong>。支持快速查找、插入、删除一个数据。</p>
+<p><strong>二叉查找树要求，在树中的任意一个节点，其左子树中的每个节点的值，都要小于这个节点的值，而右子树节点的值都大于这个节点的值</strong>。</p>
+<h3 id="查找">
+  查找
+  <a class="anchor" href="#%e6%9f%a5%e6%89%be">#</a>
+</h3>
+<p>先取根节点，如果它等于要查找的数据，就返回。如果要查找的数据比根节点的值小，那就在左子树中递归查找；如果要查找的数据比根节点的值大，
+那就在右子树中递归查找。</p>
+<h3 id="插入">
+  插入
+  <a class="anchor" href="#%e6%8f%92%e5%85%a5">#</a>
+</h3>
+<p>新插入的数据一般都是在叶子节点上，所以只需要从根节点开始，依次比较要插入的数据和节点的大小关系。如果要插入的数据比节点的数据大，并且节点的
+右子树为空，就将新数据直接插到右子节点的位置；如果不为空，就再递归遍历右子树，查找插入位置。同理，如果要插入的数据比节点数值小，并且节点
+的左子树为空，就将新数据插入到左子节点的位置；如果不为空，就再递归遍历左子树，查找插入位置。</p>
+<h3 id="删除">
+  删除
+  <a class="anchor" href="#%e5%88%a0%e9%99%a4">#</a>
+</h3>
+<p>删除操作比较复杂，针对要删除节点的子节点个数的不同，要分三种情况：</p>
+<ol>
+<li>如果要删除的节点没有子节点，只需要直接将父节点中，指向要删除节点的指针置为 <code>null</code>。</li>
+<li>如果要删除的节点只有一个子节点（只有左子节点或者右子节点），只需要更新父节点指向要删除节点的指针，让它指向要删除节点的子
+节点就可以了。</li>
+<li>如果要删除的节点有两个子节点，这就比较复杂了。需要找到这个节点的右子树中的最小节点，把它替换到要删除的节点上。然后再删除掉这个
+最小节点，因为最小节点肯定没有左子节点（如果有左子结点，那就不是最小节点了），所以，我们可以应用上面两条规则来删除这个最小节点。</li>
+</ol>
+<p><img src="../../images/bst_delete.jpg" alt="bst_delete" /></p>
+<h3 id="支持重复数据的二叉查找树">
+  支持重复数据的二叉查找树
+  <a class="anchor" href="#%e6%94%af%e6%8c%81%e9%87%8d%e5%a4%8d%e6%95%b0%e6%8d%ae%e7%9a%84%e4%ba%8c%e5%8f%89%e6%9f%a5%e6%89%be%e6%a0%91">#</a>
+</h3>
+<p>上面的二叉查找树的操作，针对的是不存在键值相同的情况。那如果存储的两个对象键值相同，该怎么处理？
+有两种解决方法：</p>
+<ol>
+<li>二叉查找树中每一个节点不仅会存储一个数据，因此通过链表和支持动态扩容的数组等数据结构，把值相同的数据都存储在同一个节点上。</li>
+<li>第二种方法，每个节点仍然只存储一个数据。在查找插入位置的过程中，如果碰到一个节点的值，与要插入数据的值相同，我们就将这个要插入的
+数据放到这个节点的右子树，也就是说，把这个新插入的数据当作大于这个节点的值来处理。</li>
+</ol>
+<p><img src="../../images/bst_insert2.jpg" alt="bst_insert2" /></p>
+<p>当要查找数据的时候，遇到值相同的节点，并不停止查找操作，而是继续在右子树中查找，直到遇到叶子节点，才停止。这样就可以把键值等于要查找值的所
+有节点都找出来。</p>
+<p>对于删除操作，也需要先查找到每个要删除的节点，然后再按前面讲的删除操作的方法，依次删除。</p>
+<h3 id="二叉查找树的时间复杂度">
+  二叉查找树的时间复杂度
+  <a class="anchor" href="#%e4%ba%8c%e5%8f%89%e6%9f%a5%e6%89%be%e6%a0%91%e7%9a%84%e6%97%b6%e9%97%b4%e5%a4%8d%e6%9d%82%e5%ba%a6">#</a>
+</h3>
+<p>不同形态二叉查找树，查找、插入、删除操作的时间复杂度是不同的。</p>
+<p><img src="../../images/bst_o.jpg" alt="bst_o" /></p>
+<p>第一种情况是最糟糕的情况，根节点的左右子树极度不平衡，退化成了链表，查找的时间复杂度就变成了 <code>O(n)</code>。</p>
+<p>最理想的情况下，二叉查找树是一棵完全二叉树（或满二叉树），时间复杂度其实都跟树的高度成正比，也就是 <code>O(height)</code>
+（可以查看<a href="https://github.com/shipengqi/algorithm-learn/blob/master/demos/trees/bstree/binary_search_tree.go">代码示例</a>）。</p>
+<p>那么如何求一棵包含 n 个节点的完全二叉树的高度？</p>
+<p>树的高度就等于最大层数减一，包含 n 个节点的完全二叉树中，第一层包含 1 个节点，第二层包含 2 个节点，第三层包含 4 个节点，依次类推，下面一
+层节点个数是上一层的 2 倍，第 K 层包含的节点个数就是 <code>2^(K-1)</code>。</p>
+<p>但是，对于完全二叉树来说，最后一层的节点个数并不确定。它包含的节点个数在 1 个到 <code>2^(L-1)</code> 个之间（假设 L 是最大层数）。
+如果把每一层的节点个数加起来就是总的节点个数 n。也就是说，如果节点的个数是 n，那么 n 满足这样一个关系：</p>
+<pre><code>n &gt;= 1+2+4+8+...+2^(L-2)+1
+n &lt;= 1+2+4+8+...+2^(L-2)+2^(L-1)
+</code></pre><p>这时两个等比数列，L 的范围是<code>[log2(n+1), log2(n) +1]</code>。完全二叉树的层数小于等于 <code>log2(n) + 1</code>，也就是说，完全二叉树的高度小于
+等于 <code>log2n</code>。</p>
+<h3 id="二叉查找树和散列表">
+  二叉查找树和散列表
+  <a class="anchor" href="#%e4%ba%8c%e5%8f%89%e6%9f%a5%e6%89%be%e6%a0%91%e5%92%8c%e6%95%a3%e5%88%97%e8%a1%a8">#</a>
+</h3>
+<p>散列表的插入、删除、查找操作的时间复杂度可以做到常量级的 <code>O(1)</code>，非常高效。二叉查找树在比较平衡的情况下，插入、删除、查找操作时间复杂度
+才是 <code>O(logn)</code>，相对散列表，好像并没有什么优势，那为什么还要用二叉查找树？</p>
+<ol>
+<li>散列表中的数据是无序存储的，如果要输出有序的数据，需要先进行排序。而对于二叉查找树来说，我们只需要中序遍历，就可以在 <code>O(n)</code> 的时间
+复杂度内，输出有序的数据序列。</li>
+<li>散列表扩容耗时很多，而且当遇到散列冲突时，性能不稳定，尽管二叉查找树的性能不稳定，但是在工程中，最常用的平衡二叉查找树的性能非常稳定，时间
+复杂度稳定在 <code>O(logn)</code>。</li>
+<li>尽管散列表的查找等操作的时间复杂度是常量级的，但因为哈希冲突的存在，这个常量不一定比 logn 小，所以实际的查找速度可能不一定比 <code>O(logn)</code> 
+快。加上哈希函数的耗时，也不一定就比平衡二叉查找树的效率高。</li>
+<li>散列表的构造比二叉查找树要复杂，需要考虑的东西很多。比如散列函数的设计、冲突解决办法、扩容、缩容等。平衡二叉查找树只需要考虑平衡性
+这一个问题。</li>
+<li>为了避免过多的散列冲突，散列表装载因子不能太大，特别是基于开放寻址法解决冲突的散列表，不然会浪费一定的存储空间。</li>
+</ol>
+<h2 id="红黑树">
+  红黑树
+  <a class="anchor" href="#%e7%ba%a2%e9%bb%91%e6%a0%91">#</a>
+</h2>
+<p>极端情况下，二叉树会退化为链表，时间复杂度会退化到 <code>O(n)</code>。要解决这个复杂度退化的问题，需要设计一种<strong>平衡二叉查找树</strong>。</p>
+<h3 id="平衡二叉查找树">
+  平衡二叉查找树
+  <a class="anchor" href="#%e5%b9%b3%e8%a1%a1%e4%ba%8c%e5%8f%89%e6%9f%a5%e6%89%be%e6%a0%91">#</a>
+</h3>
+<p>平衡二叉树：二叉树中任意一个节点的左右子树的高度相差不能大于 1。从这个定义来看，完全二叉树、满二叉树其实都是平衡二叉树，但是非完全二叉树也有
+可能是平衡二叉树。</p>
+<p><img src="../../images/balance_tree.jpg" alt="balance_tree" /></p>
+<h3 id="红黑树-1">
+  红黑树
+  <a class="anchor" href="#%e7%ba%a2%e9%bb%91%e6%a0%91-1">#</a>
+</h3>
+<p>平衡二叉查找树有很多，比如，Splay Tree（伸展树）、Treap（树堆）等，红黑树（Red-Black Tree），简称 R-B Tree。它是一种不严格的平
+衡二叉查找树。</p>
+<p>红黑树中的节点，一类被标记为黑色，一类被标记为红色。一棵红黑树要满足的要求：</p>
+<ul>
+<li>根节点是黑色的；</li>
+<li>每个叶子节点都是黑色的空节点（NIL），也就是说，叶子节点不存储数据；</li>
+<li>任何相邻的节点都不能同时为红色，也就是说，红色节点是被黑色节点隔开的；</li>
+<li>每个节点，从该节点到达其可达叶子节点的所有路径，都包含相同数目的黑色节点；</li>
+</ul>
+<p><img src="../../images/red_black_tree.jpg" alt="red_black_tree" /></p>
+<p>平衡二叉查找树的初衷，是为了解决二叉查找树因为动态更新导致的性能退化问题。所以，“平衡”的意思可以等价为性能不退化。“近似平衡”就等价为性能
+不会退化的太严重。红黑树是近似平衡的。</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+  <div><a class="flex align-center" href="https://github.com/shipengqi/algorithm-learn/commit/f0affa43a408758a4a1a44d5288e6e0087d8415f" title='Last modified by shipengqi | June 18, 2020' target="_blank" rel="noopener">
+      <img src="/algorithm-learn/svg/calendar.svg" class="book-icon" alt="Calendar" />
+      <span>June 18, 2020</span>
+    </a>
+  </div>
+
+
+
+  <div>
+    <a class="flex align-center" href="https://github.com/shipengqi/algorithm-learn/edit/master/content//docs/13_binary_tree.md" target="_blank" rel="noopener">
+      <img src="/algorithm-learn/svg/edit.svg" class="book-icon" alt="Edit" />
+      <span>Edit this page</span>
+    </a>
+  </div>
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#二叉树">二叉树</a>
+      <ul>
+        <li><a href="#二叉树的存储">二叉树的存储</a></li>
+        <li><a href="#二叉树的遍历">二叉树的遍历</a></li>
+      </ul>
+    </li>
+    <li><a href="#二叉查找树">二叉查找树</a>
+      <ul>
+        <li><a href="#查找">查找</a></li>
+        <li><a href="#插入">插入</a></li>
+        <li><a href="#删除">删除</a></li>
+        <li><a href="#支持重复数据的二叉查找树">支持重复数据的二叉查找树</a></li>
+        <li><a href="#二叉查找树的时间复杂度">二叉查找树的时间复杂度</a></li>
+        <li><a href="#二叉查找树和散列表">二叉查找树和散列表</a></li>
+      </ul>
+    </li>
+    <li><a href="#红黑树">红黑树</a>
+      <ul>
+        <li><a href="#平衡二叉查找树">平衡二叉查找树</a></li>
+        <li><a href="#红黑树-1">红黑树</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

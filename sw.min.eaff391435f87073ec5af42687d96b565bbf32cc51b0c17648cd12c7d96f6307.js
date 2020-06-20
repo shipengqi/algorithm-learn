@@ -1,0 +1,1 @@
+if(navigator.serviceWorker){navigator.serviceWorker.register("/algorithm-learn/sw.js",{scope:"/algorithm-learn/"});}

@@ -1,0 +1,15 @@
+{
+  "name": "Algorithm Learning",
+  "short_name": "Algorithm Learning",
+  "start_url": "/algorithm-learn/",
+  "scope": "/algorithm-learn/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/algorithm-learn/favicon.svg",
+      "sizes": "512x512"
+    }
+  ]
+}

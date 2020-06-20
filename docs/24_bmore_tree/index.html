@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" dir=>
+
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="对于存储的需求，无非就是增删改查，并不复杂。但是，一旦存储的数据很多，那性能就成了要关注的重点。 特别是一些跟存储相关的基础系统，比如 MySQL 数据库、消息中间件 RocketMQ 等。这些系统的实现，都离不开索引。
+索引可以类比书籍的目录来理解，通过目录，我们就可以快速定位相关知识点的页数，查找的速度也会有质的提高。
+设计索引的需求#功能性需求#功能性需求需要考虑的点：
+ 数据可以分为两类：   结构化数据，比如，MySQL 中的数据； 非结构化数据，比如搜索引擎中网页。非结构化数据一般需要做预处理，提取出查询关键词，对关键词构建索引。  数据是静态还是动态：   静态数据，也就是说，不会有数据的增加、删除、更新操作，在构建索引的时，只需要考虑查询效率就可以了。 动态数据，大部分场景下，都是对动态数据构建索引，不仅要考虑到索引的查询效率，在原始数据更新的同时， 还需要动态地更新索引。设计起来更加复杂。  索引的存储：   索引存储在内存中，查询的速度肯定要比在磁盘中高。但是，如果原始数据量很大的情况下，对应的索引可能也会 很大。内存是有限的，这时就需要考虑存储在磁盘。 一部分存储在内存，一部分存储在磁盘，可以兼顾内存消耗和查询效率。  单值查找还是区间查找：   单值查找，也就是根据查询关键词等于某个值的数据。 区间查找，就是查找关键词处于某个区间值的所有数据。  单关键词查找还是多关键词组合查找：   搜索引擎中构建的索引，既要支持一个关键词的查找，比如“数据结构”，也要支持组合关键词查找，比如 “数据结构 AND 算法”。 对于多关键词查询，像 MySQL 这种结构化数据的查询需求，可以实现针对多个关键词的组合，建立索引； 对于像搜索引擎这样的非结构数据的查询需求，可以针对单个关键词构建索引，然后通过集合操作，比如求并集、 求交集等，计算出多个关键词组合的查询结果。  非功能性需求#存储空间#不管是存储在内存中还是磁盘中，索引对存储空间的消耗不能过大。如果存储在内存中，索引对占用存储空间的限制就会非常苛刻。毕竟内存空间非 常有限，一个中间件启动后就占用几个 GB 的内存，开发者显然是无法接受的。如果存储在硬盘中，那索引对占用存储空间的限制，稍微会放宽一些。 但是，我们也不能掉以轻心。因为，有时候，索引对存储空间的消耗会超过原始数据。
+索引的维护成本#索引的目的是提高查询效率，但是，基于动态数据集合构建的索引，还要考虑到，索引的维护成本。因为在原始数据动态增删改的同时，也需要 动态的更新索引。而索引的更新势必会影响到增删改操作的性能。">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="索引" />
+<meta property="og:description" content="对于存储的需求，无非就是增删改查，并不复杂。但是，一旦存储的数据很多，那性能就成了要关注的重点。 特别是一些跟存储相关的基础系统，比如 MySQL 数据库、消息中间件 RocketMQ 等。这些系统的实现，都离不开索引。
+索引可以类比书籍的目录来理解，通过目录，我们就可以快速定位相关知识点的页数，查找的速度也会有质的提高。
+设计索引的需求#功能性需求#功能性需求需要考虑的点：
+ 数据可以分为两类：   结构化数据，比如，MySQL 中的数据； 非结构化数据，比如搜索引擎中网页。非结构化数据一般需要做预处理，提取出查询关键词，对关键词构建索引。  数据是静态还是动态：   静态数据，也就是说，不会有数据的增加、删除、更新操作，在构建索引的时，只需要考虑查询效率就可以了。 动态数据，大部分场景下，都是对动态数据构建索引，不仅要考虑到索引的查询效率，在原始数据更新的同时， 还需要动态地更新索引。设计起来更加复杂。  索引的存储：   索引存储在内存中，查询的速度肯定要比在磁盘中高。但是，如果原始数据量很大的情况下，对应的索引可能也会 很大。内存是有限的，这时就需要考虑存储在磁盘。 一部分存储在内存，一部分存储在磁盘，可以兼顾内存消耗和查询效率。  单值查找还是区间查找：   单值查找，也就是根据查询关键词等于某个值的数据。 区间查找，就是查找关键词处于某个区间值的所有数据。  单关键词查找还是多关键词组合查找：   搜索引擎中构建的索引，既要支持一个关键词的查找，比如“数据结构”，也要支持组合关键词查找，比如 “数据结构 AND 算法”。 对于多关键词查询，像 MySQL 这种结构化数据的查询需求，可以实现针对多个关键词的组合，建立索引； 对于像搜索引擎这样的非结构数据的查询需求，可以针对单个关键词构建索引，然后通过集合操作，比如求并集、 求交集等，计算出多个关键词组合的查询结果。  非功能性需求#存储空间#不管是存储在内存中还是磁盘中，索引对存储空间的消耗不能过大。如果存储在内存中，索引对占用存储空间的限制就会非常苛刻。毕竟内存空间非 常有限，一个中间件启动后就占用几个 GB 的内存，开发者显然是无法接受的。如果存储在硬盘中，那索引对占用存储空间的限制，稍微会放宽一些。 但是，我们也不能掉以轻心。因为，有时候，索引对存储空间的消耗会超过原始数据。
+索引的维护成本#索引的目的是提高查询效率，但是，基于动态数据集合构建的索引，还要考虑到，索引的维护成本。因为在原始数据动态增删改的同时，也需要 动态的更新索引。而索引的更新势必会影响到增删改操作的性能。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://shipengqi.github.io/algorithm-learn/docs/24_bmore_tree/" />
+<meta property="article:modified_time" content="2020-06-18T17:06:12+08:00" />
+<title>索引 | Algorithm Learning</title>
+<link rel="manifest" href="/algorithm-learn/manifest.json">
+<link rel="icon" href="/algorithm-learn/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/algorithm-learn/book.min.b3215d9d1d18d9051e7fbe8f256ff80e30f41d29073b86348e230d297b771002.css" integrity="sha256-syFdnR0Y2QUef76PJW/4DjD0HSkHO4Y0jiMNKXt3EAI=">
+<script defer src="/algorithm-learn/en.search.min.511cae842a1aa3c6a84d63e20bade0ff9213702b34b6fe826804dc6e1b02a9e3.js" integrity="sha256-URyuhCoao8aoTWPiC63g/5ITcCs0tv6CaATcbhsCqeM="></script>
+
+<script defer src="/algorithm-learn/sw.min.eaff391435f87073ec5af42687d96b565bbf32cc51b0c17648cd12c7d96f6307.js" integrity="sha256-6v85FDX4cHPsWvQmh9lrVlu/MsxRsMF2SM0Sx9lvYwc="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir=>
+  <input type="checkbox" class="hidden" id="menu-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  <nav>
+<h2 class="book-brand">
+  <a href="/algorithm-learn"><span>Algorithm Learning</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/shipengqi/algorithm-learn" target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+  <li>
+    <a href="https://shipengqi.github.io/" target="_blank" rel="noopener">
+        Blog
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+
+  <p>━━━━━━━━━━━━━━━━━━━━</p>
+<ul>
+<li><a href="/algorithm-learn/docs/01_complex_analysis/">复杂度分析</a></li>
+<li><a href="/algorithm-learn/docs/02_array/">数组</a></li>
+<li><a href="/algorithm-learn/docs/03_link_list/">链表</a></li>
+<li><a href="/algorithm-learn/docs/04_stack/">栈</a></li>
+<li><a href="/algorithm-learn/docs/05_queue/">队列</a></li>
+<li><a href="/algorithm-learn/docs/06_recursion/">递归</a></li>
+<li><a href="/algorithm-learn/docs/07_sort/">排序</a></li>
+<li><a href="/algorithm-learn/docs/08_linear_sort/">线性排序</a></li>
+<li><a href="/algorithm-learn/docs/09_binary_search/">二分查找</a></li>
+<li><a href="/algorithm-learn/docs/10_skip_list/">跳表</a></li>
+<li><a href="/algorithm-learn/docs/11_hash_table/">散列表</a></li>
+<li><a href="/algorithm-learn/docs/12_hash_algo/">哈希算法</a></li>
+<li><a href="/algorithm-learn/docs/13_binary_tree/">二叉树</a></li>
+<li><a href="/algorithm-learn/docs/14_heap/">堆</a></li>
+<li><a href="/algorithm-learn/docs/15_graph/">图</a></li>
+<li><a href="/algorithm-learn/docs/16_string_match_algo/">字符串匹配算法</a></li>
+<li><a href="/algorithm-learn/docs/17_trie/">Trie 树</a></li>
+<li><a href="/algorithm-learn/docs/18_ac/">AC 自动机</a></li>
+<li><a href="/algorithm-learn/docs/19_greedy/">贪心算法</a></li>
+<li><a href="/algorithm-learn/docs/20_deivide_conquer/">分治算法</a></li>
+<li><a href="/algorithm-learn/docs/21_backtracking/">回溯算法</a></li>
+<li><a href="/algorithm-learn/docs/22_dynamic_programming/">动态规划</a></li>
+<li><a href="/algorithm-learn/docs/23_bit_map/">位图</a></li>
+<li><a href="/algorithm-learn/docs/24_bmore_tree/"class=active>索引</a></li>
+<li><a href="/algorithm-learn/docs/25_vector/">向量空间</a>
+<!-- raw HTML omitted --></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/algorithm-learn/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>索引</strong>
+
+  <label for="toc-control">
+    
+    <img src="/algorithm-learn/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+    <input type="checkbox" class="hidden" id="toc-control" />
+    <aside class="hidden clearfix">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#设计索引的需求">设计索引的需求</a>
+      <ul>
+        <li><a href="#功能性需求">功能性需求</a></li>
+        <li><a href="#非功能性需求">非功能性需求</a></li>
+        <li><a href="#构建索引的数据结构">构建索引的数据结构</a></li>
+      </ul>
+    </li>
+    <li><a href="#b-树索引">B+ 树索引</a>
+      <ul>
+        <li><a href="#用数据结构解决问题">用数据结构解决问题</a></li>
+        <li><a href="#改造二叉查找树来解决问题">改造二叉查找树来解决问题</a></li>
+        <li><a href="#如何占用太多内存的问题">如何占用太多内存的问题</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+    </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><p>对于存储的需求，无非就是增删改查，并不复杂。但是，一旦存储的数据很多，那性能就成了要关注的重点。
+特别是一些跟存储相关的基础系统，比如 MySQL 数据库、消息中间件 RocketMQ 等。这些系统的实现，都离不开<strong>索引</strong>。</p>
+<p>索引可以类比书籍的目录来理解，通过目录，我们就可以快速定位相关知识点的页数，查找的速度也会有质的提高。</p>
+<h2 id="设计索引的需求">
+  设计索引的需求
+  <a class="anchor" href="#%e8%ae%be%e8%ae%a1%e7%b4%a2%e5%bc%95%e7%9a%84%e9%9c%80%e6%b1%82">#</a>
+</h2>
+<h3 id="功能性需求">
+  功能性需求
+  <a class="anchor" href="#%e5%8a%9f%e8%83%bd%e6%80%a7%e9%9c%80%e6%b1%82">#</a>
+</h3>
+<p>功能性需求需要考虑的点：</p>
+<ol>
+<li>数据可以分为两类：</li>
+</ol>
+<ul>
+<li>结构化数据，比如，MySQL 中的数据；</li>
+<li>非结构化数据，比如搜索引擎中网页。非结构化数据一般需要做预处理，提取出查询关键词，<strong>对关键词构建索引</strong>。</li>
+</ul>
+<ol start="2">
+<li>数据是静态还是动态：</li>
+</ol>
+<ul>
+<li>静态数据，也就是说，不会有数据的增加、删除、更新操作，在构建索引的时，只需要考虑查询效率就可以了。</li>
+<li>动态数据，大部分场景下，都是对动态数据构建索引，不仅要考虑到索引的查询效率，在<strong>原始数据更新的同时，
+还需要动态地更新索引</strong>。设计起来更加复杂。</li>
+</ul>
+<ol start="3">
+<li>索引的存储：</li>
+</ol>
+<ul>
+<li>索引存储在内存中，查询的速度肯定要比在磁盘中高。但是，如果原始数据量很大的情况下，对应的索引可能也会
+很大。内存是有限的，这时就需要考虑存储在磁盘。</li>
+<li>一部分存储在内存，一部分存储在磁盘，可以兼顾内存消耗和查询效率。</li>
+</ul>
+<ol start="4">
+<li>单值查找还是区间查找：</li>
+</ol>
+<ul>
+<li>单值查找，也就是根据查询关键词等于某个值的数据。</li>
+<li>区间查找，就是查找关键词处于某个区间值的所有数据。</li>
+</ul>
+<ol start="5">
+<li>单关键词查找还是多关键词组合查找：</li>
+</ol>
+<ul>
+<li>搜索引擎中构建的索引，既要支持一个关键词的查找，比如“数据结构”，也要支持组合关键词查找，比如
+“数据结构 AND 算法”。</li>
+<li>对于多关键词查询，像 MySQL 这种结构化数据的查询需求，可以实现针对多个关键词的组合，建立索引；
+对于像搜索引擎这样的非结构数据的查询需求，可以针对单个关键词构建索引，然后通过集合操作，比如求并集、
+求交集等，计算出多个关键词组合的查询结果。</li>
+</ul>
+<h3 id="非功能性需求">
+  非功能性需求
+  <a class="anchor" href="#%e9%9d%9e%e5%8a%9f%e8%83%bd%e6%80%a7%e9%9c%80%e6%b1%82">#</a>
+</h3>
+<h4 id="存储空间">
+  存储空间
+  <a class="anchor" href="#%e5%ad%98%e5%82%a8%e7%a9%ba%e9%97%b4">#</a>
+</h4>
+<p>不管是存储在内存中还是磁盘中，索引对存储空间的消耗不能过大。如果存储在内存中，索引对占用存储空间的限制就会非常苛刻。毕竟内存空间非
+常有限，一个中间件启动后就占用几个 GB 的内存，开发者显然是无法接受的。如果存储在硬盘中，那索引对占用存储空间的限制，稍微会放宽一些。
+但是，我们也不能掉以轻心。因为，有时候，索引对存储空间的消耗会超过原始数据。</p>
+<h4 id="索引的维护成本">
+  索引的维护成本
+  <a class="anchor" href="#%e7%b4%a2%e5%bc%95%e7%9a%84%e7%bb%b4%e6%8a%a4%e6%88%90%e6%9c%ac">#</a>
+</h4>
+<p>索引的目的是提高查询效率，但是，基于动态数据集合构建的索引，还要考虑到，索引的维护成本。因为在原始数据动态增删改的同时，也需要
+动态的更新索引。而索引的更新势必会影响到增删改操作的性能。</p>
+<h3 id="构建索引的数据结构">
+  构建索引的数据结构
+  <a class="anchor" href="#%e6%9e%84%e5%bb%ba%e7%b4%a2%e5%bc%95%e7%9a%84%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84">#</a>
+</h3>
+<p>常用来构建索引的数据结构，比如，散列表、红黑树、跳表、B+ 树。除此之外，位图、布隆过滤器可以作为辅助索引，有序数组可以用来
+对静态数据构建索引。</p>
+<p>散列表增删改查操作的性能非常好，时间复杂度是 O(1)。一些键值数据库，比如 Redis、Memcache，就是使用散列表来构建索引的。</p>
+<p>位图和布隆过滤器这两个数据结构，也可以用于索引中，辅助存储在磁盘中的索引，加速数据查找的效率。布隆过滤器有一定的判错率。但是对于判定
+不存在的数据，那肯定就不存在。而且，内存占用非常少。可以针对数据，构建一个布隆过滤器，并且存储在内存中。当要查询数据的时候，可以先通
+过布隆过滤器，判定是否存在。如果通过布隆过滤器判定数据不存在，就没有必要读取磁盘中的索引了。对于数据不存在的情况，数据查询就更加快速了。</p>
+<h2 id="b-树索引">
+  B+ 树索引
+  <a class="anchor" href="#b-%e6%a0%91%e7%b4%a2%e5%bc%95">#</a>
+</h2>
+<p>假设有两个需求：</p>
+<ul>
+<li>根据某个值查找数据，比如 <code>select * from user where id=1234</code>；</li>
+<li>根据区间值来查找某些数据，比如 <code>select * from user where id &gt; 1234 and id &lt; 2345</code>。</li>
+</ul>
+<p>上面的语句实现了功能需求，除了功能，对于数据库的性能要考察两个方面：</p>
+<ul>
+<li>执行效率，希望通过索引，查询数据的效率尽可能的高；</li>
+<li>存储空间，希望索引不要消耗太多的内存空间。</li>
+</ul>
+<h3 id="用数据结构解决问题">
+  用数据结构解决问题
+  <a class="anchor" href="#%e7%94%a8%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84%e8%a7%a3%e5%86%b3%e9%97%ae%e9%a2%98">#</a>
+</h3>
+<ul>
+<li>散列表的查询性能很好，时间复杂度是 <code>O(1)</code>。但是，散列表不能支持按照区间快速查找数据。所以，散列表不能满足需求。</li>
+<li>平衡二叉查找树查询的性能也很高，时间复杂度是 <code>O(logn)</code>。而且，对树进行中序遍历，可以得到一个从小到大有序的数据序列，
+但这仍然不足以支持按照区间快速查找数据。</li>
+<li>跳表是在链表之上加上多层索引构成的。它支持快速地插入、查找、删除数据，对应的时间复杂度是 <code>O(logn)</code>。并且，跳表也支
+持按照区间快速地查找数据。只需要定位到区间起点值对应在链表中的结点，然后从这个结点开始，顺序遍历链表，直到区间终点对
+应的结点为止，这期间遍历得到的数据就是满足区间值的数据。</li>
+</ul>
+<p>跳表是可以解决这个问题。实际上，数据库索引所用到的数据结构跟跳表非常相似，叫作 B+ 树。不过，它是通过二叉查找树演化过来的，
+而非跳表。</p>
+<h3 id="改造二叉查找树来解决问题">
+  改造二叉查找树来解决问题
+  <a class="anchor" href="#%e6%94%b9%e9%80%a0%e4%ba%8c%e5%8f%89%e6%9f%a5%e6%89%be%e6%a0%91%e6%9d%a5%e8%a7%a3%e5%86%b3%e9%97%ae%e9%a2%98">#</a>
+</h3>
+<p>为了让二叉查找树支持按照区间来查找数据，可以对它进行这样的改造：<strong>树中的节点并不存储数据本身，而是只是作为索引</strong>。除此之外，<strong>把每个叶
+子节点串在一条链表上，链表中的数据是从小到大有序的</strong>。就像下图，看起来很像跳表：</p>
+<p><img src="../../images/bplustree1.jpg" alt="" /></p>
+<p>如果要求某个区间的数据。只需要拿区间的起始值，在树中进行查找，当查找到某个叶子节点之后，再顺着链表往后遍历，直到链表中的结点数据值大于
+区间的终止值为止。所有遍历到的数据，就是符合区间值的所有数据。</p>
+<p>但是，如果要为几千万、上亿的数据构建索引，存储在内存中，占用的内存会非常多。比如，给一亿个数据构建二叉查找树索引，那索引中会包含
+大约 1 亿个节点，每个节点假设占用 16 个字节，那就需要大约 1GB 的内存空间。</p>
+<h3 id="如何占用太多内存的问题">
+  如何占用太多内存的问题
+  <a class="anchor" href="#%e5%a6%82%e4%bd%95%e5%8d%a0%e7%94%a8%e5%a4%aa%e5%a4%9a%e5%86%85%e5%ad%98%e7%9a%84%e9%97%ae%e9%a2%98">#</a>
+</h3>
+<p>借助时间换空间的思路，把索引存储在硬盘中，而非内存中。但是硬盘是一个非常慢速的存储设备。如果把改造之后的二叉树存储在硬盘中，那么每
+个节点的读取（或者访问），都对应一次磁盘 IO 操作。树的高度就等于每次查询数据时磁盘 IO 操作的次数。</p>
+<h4 id="如何降低树的高度">
+  如何降低树的高度
+  <a class="anchor" href="#%e5%a6%82%e4%bd%95%e9%99%8d%e4%bd%8e%e6%a0%91%e7%9a%84%e9%ab%98%e5%ba%a6">#</a>
+</h4>
+<p>把索引构建成 m 叉树.</p>
+<p>如下图，给 16 个数据构建二叉树索引，树的高度是 4，查找一个数据，就需要 4 个磁盘 IO 操作（如果根节点存储在内存中，其他结点存储在磁盘中），
+如果对 16 个数据构建五叉树索引，那高度只有 2，查找一个数据，对应只需要2次磁盘操作。如果 m 叉树中的 m 是 100，那对一亿个数据构建索引，树
+的高度也只是 3，最多只要 3 次磁盘 IO 就能获取到数据。磁盘 IO 变少了，查找数据的效率也就提高了。</p>
+<p><img src="../../images/bplustree3.jpg" alt="" /></p>
+<p><img src="../../images/bplustree2.jpg" alt="" /></p>
+<h4 id="m-叉树-m-的大小">
+  m 叉树 m 的大小
+  <a class="anchor" href="#m-%e5%8f%89%e6%a0%91-m-%e7%9a%84%e5%a4%a7%e5%b0%8f">#</a>
+</h4>
+<p>操作系统都是按页（一页大小通常是 4KB，这个值可以通过 getconfig PAGE_SIZE 命令查看）来读取的，一次会读一页的数据。如果要读取的数
+据量超过一页的大小，就会触发多次 IO 操作。所以，在选择 m 大小的时候，要尽量让每个节点的大小等于一个页的大小。</p>
+<p><img src="../../images/bplustree4.jpg" alt="" /></p>
+<h4 id="索引的弊端">
+  索引的弊端
+  <a class="anchor" href="#%e7%b4%a2%e5%bc%95%e7%9a%84%e5%bc%8a%e7%ab%af">#</a>
+</h4>
+<p>索引也会让写入数据的效率下降。数据的写入过程，会涉及索引的更新，这是索引导致写入变慢的主要原因。</p>
+<p>对于一个 B+ 树来说，m 值是根据页的大小事先计算好的，也就是说，每个节点最多只能有 m 个子节点。在往数据库中写入数据的过程中，这样就
+有可能使索引中某些节点的子节点个数超过 m，这个节点的大小超过了一个页的大小，读取这样一个节点，就会导致多次磁盘 IO 操作。</p>
+<p>需要将这个节点分裂成两个节点。但是，节点分裂之后，其上层父节点的子节点个数就有可能超过m个。不过这也没关系，我们可以用同样的方法，将
+父节点也分裂成两个节点。这种级联反应会从下往上，一直影响到根节点。</p>
+<p><img src="../../images/bplustree5.jpg" alt="" /></p>
+<p>正是因为要时刻保证 B+ 树索引是一个 m 叉树，所以，索引的存在会导致数据库写入的速度降低。</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+  <div><a class="flex align-center" href="https://github.com/shipengqi/algorithm-learn/commit/f0affa43a408758a4a1a44d5288e6e0087d8415f" title='Last modified by shipengqi | June 18, 2020' target="_blank" rel="noopener">
+      <img src="/algorithm-learn/svg/calendar.svg" class="book-icon" alt="Calendar" />
+      <span>June 18, 2020</span>
+    </a>
+  </div>
+
+
+
+  <div>
+    <a class="flex align-center" href="https://github.com/shipengqi/algorithm-learn/edit/master/content//docs/24_bmore_tree.md" target="_blank" rel="noopener">
+      <img src="/algorithm-learn/svg/edit.svg" class="book-icon" alt="Edit" />
+      <span>Edit this page</span>
+    </a>
+  </div>
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#设计索引的需求">设计索引的需求</a>
+      <ul>
+        <li><a href="#功能性需求">功能性需求</a></li>
+        <li><a href="#非功能性需求">非功能性需求</a></li>
+        <li><a href="#构建索引的数据结构">构建索引的数据结构</a></li>
+      </ul>
+    </li>
+    <li><a href="#b-树索引">B+ 树索引</a>
+      <ul>
+        <li><a href="#用数据结构解决问题">用数据结构解决问题</a></li>
+        <li><a href="#改造二叉查找树来解决问题">改造二叉查找树来解决问题</a></li>
+        <li><a href="#如何占用太多内存的问题">如何占用太多内存的问题</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

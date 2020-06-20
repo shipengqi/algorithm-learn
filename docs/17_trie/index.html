@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en" dir=>
+
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Trie 树#Trie 树（字典树）。树形结构。是一种专门处理字符串匹配的数据结构，用来解决在一组字符串集合中快速查找某个字符串的问题。
+例如，一个字符串集合中 6 个字符串： how，hi，her，hello，so，see。如果要在里面多次查找某个字符串是否存在。 如果每次查找，都是拿要查找的字符串跟这 6 个字符串依次进行字符串匹配，效率肯定是比较低的。如何高效查询？
+利用 Trie 树结构，利用字符串之间的公共前缀，将重复的前缀合并在一起。如：
+根节点不包含任何信息。每个节点表示一个字符串中的字符，从根节点到红色节点的一条路径表示一个字符串 （红色节点并不都是叶子节点）。
+构造 Trie 树结构的过程：
+当在 Trie 树中查找一个字符串的时候，比如 “her”，将要查找的字符串分割成单个的字符 h，e，r，然后从 Trie 树的根节点开始 匹配。依次找到 h，e，r 三个节点。
+如果要查找 “he”，从根节点开始，找到 h，e 节点。但是，路径的最后一个节点 “e” 并不是红色的。也就是说，“he” 是某个字 符串的前缀子串，但并不能完全匹配任何字符串。
+实现一棵 Trie 树#二叉树中，一个节点的左右子节点是通过两个指针来存储的，但是 Trie 树是一个多叉树，如何存储子节点？使用数组。 借助散列表的思想，通过一个下标与字符一一映射的数组，来存储子节点的指针。
+假设字符串中只有从 a 到 z 这 26 个小写字母，在数组中下标为 0 的位置，存储指向子节点 a 的指针，下标为 1 的位置存储指向子节点 b 的指针， 以此类推，下标为 25 的位置，存储的是指向的子节点 z 的指针。如果某个字符的子节点不存在，就在对应的下标的位置存储 null。
+在 Trie 树中查找字符串的时候，就可以通过字符的 ASCII 码减去 a 的 ASCII 码，迅速找到匹配的子节点的指针。比如，d 的 ASCII 码减去 a 的 ASCII 码就是 3，那子节点 d 的指针就存储在数组中下标为 3 的位置中。">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="Trie 树" />
+<meta property="og:description" content="Trie 树#Trie 树（字典树）。树形结构。是一种专门处理字符串匹配的数据结构，用来解决在一组字符串集合中快速查找某个字符串的问题。
+例如，一个字符串集合中 6 个字符串： how，hi，her，hello，so，see。如果要在里面多次查找某个字符串是否存在。 如果每次查找，都是拿要查找的字符串跟这 6 个字符串依次进行字符串匹配，效率肯定是比较低的。如何高效查询？
+利用 Trie 树结构，利用字符串之间的公共前缀，将重复的前缀合并在一起。如：
+根节点不包含任何信息。每个节点表示一个字符串中的字符，从根节点到红色节点的一条路径表示一个字符串 （红色节点并不都是叶子节点）。
+构造 Trie 树结构的过程：
+当在 Trie 树中查找一个字符串的时候，比如 “her”，将要查找的字符串分割成单个的字符 h，e，r，然后从 Trie 树的根节点开始 匹配。依次找到 h，e，r 三个节点。
+如果要查找 “he”，从根节点开始，找到 h，e 节点。但是，路径的最后一个节点 “e” 并不是红色的。也就是说，“he” 是某个字 符串的前缀子串，但并不能完全匹配任何字符串。
+实现一棵 Trie 树#二叉树中，一个节点的左右子节点是通过两个指针来存储的，但是 Trie 树是一个多叉树，如何存储子节点？使用数组。 借助散列表的思想，通过一个下标与字符一一映射的数组，来存储子节点的指针。
+假设字符串中只有从 a 到 z 这 26 个小写字母，在数组中下标为 0 的位置，存储指向子节点 a 的指针，下标为 1 的位置存储指向子节点 b 的指针， 以此类推，下标为 25 的位置，存储的是指向的子节点 z 的指针。如果某个字符的子节点不存在，就在对应的下标的位置存储 null。
+在 Trie 树中查找字符串的时候，就可以通过字符的 ASCII 码减去 a 的 ASCII 码，迅速找到匹配的子节点的指针。比如，d 的 ASCII 码减去 a 的 ASCII 码就是 3，那子节点 d 的指针就存储在数组中下标为 3 的位置中。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://shipengqi.github.io/algorithm-learn/docs/17_trie/" />
+<meta property="article:modified_time" content="2020-06-18T17:06:12+08:00" />
+<title>Trie 树 | Algorithm Learning</title>
+<link rel="manifest" href="/algorithm-learn/manifest.json">
+<link rel="icon" href="/algorithm-learn/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/algorithm-learn/book.min.b3215d9d1d18d9051e7fbe8f256ff80e30f41d29073b86348e230d297b771002.css" integrity="sha256-syFdnR0Y2QUef76PJW/4DjD0HSkHO4Y0jiMNKXt3EAI=">
+<script defer src="/algorithm-learn/en.search.min.511cae842a1aa3c6a84d63e20bade0ff9213702b34b6fe826804dc6e1b02a9e3.js" integrity="sha256-URyuhCoao8aoTWPiC63g/5ITcCs0tv6CaATcbhsCqeM="></script>
+
+<script defer src="/algorithm-learn/sw.min.eaff391435f87073ec5af42687d96b565bbf32cc51b0c17648cd12c7d96f6307.js" integrity="sha256-6v85FDX4cHPsWvQmh9lrVlu/MsxRsMF2SM0Sx9lvYwc="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir=>
+  <input type="checkbox" class="hidden" id="menu-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  <nav>
+<h2 class="book-brand">
+  <a href="/algorithm-learn"><span>Algorithm Learning</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+  
+<ul>
+  
+  <li>
+    <a href="https://github.com/shipengqi/algorithm-learn" target="_blank" rel="noopener">
+        Github
+      </a>
+  </li>
+  
+  <li>
+    <a href="https://shipengqi.github.io/" target="_blank" rel="noopener">
+        Blog
+      </a>
+  </li>
+  
+</ul>
+
+
+
+
+
+
+
+  <p>━━━━━━━━━━━━━━━━━━━━</p>
+<ul>
+<li><a href="/algorithm-learn/docs/01_complex_analysis/">复杂度分析</a></li>
+<li><a href="/algorithm-learn/docs/02_array/">数组</a></li>
+<li><a href="/algorithm-learn/docs/03_link_list/">链表</a></li>
+<li><a href="/algorithm-learn/docs/04_stack/">栈</a></li>
+<li><a href="/algorithm-learn/docs/05_queue/">队列</a></li>
+<li><a href="/algorithm-learn/docs/06_recursion/">递归</a></li>
+<li><a href="/algorithm-learn/docs/07_sort/">排序</a></li>
+<li><a href="/algorithm-learn/docs/08_linear_sort/">线性排序</a></li>
+<li><a href="/algorithm-learn/docs/09_binary_search/">二分查找</a></li>
+<li><a href="/algorithm-learn/docs/10_skip_list/">跳表</a></li>
+<li><a href="/algorithm-learn/docs/11_hash_table/">散列表</a></li>
+<li><a href="/algorithm-learn/docs/12_hash_algo/">哈希算法</a></li>
+<li><a href="/algorithm-learn/docs/13_binary_tree/">二叉树</a></li>
+<li><a href="/algorithm-learn/docs/14_heap/">堆</a></li>
+<li><a href="/algorithm-learn/docs/15_graph/">图</a></li>
+<li><a href="/algorithm-learn/docs/16_string_match_algo/">字符串匹配算法</a></li>
+<li><a href="/algorithm-learn/docs/17_trie/"class=active>Trie 树</a></li>
+<li><a href="/algorithm-learn/docs/18_ac/">AC 自动机</a></li>
+<li><a href="/algorithm-learn/docs/19_greedy/">贪心算法</a></li>
+<li><a href="/algorithm-learn/docs/20_deivide_conquer/">分治算法</a></li>
+<li><a href="/algorithm-learn/docs/21_backtracking/">回溯算法</a></li>
+<li><a href="/algorithm-learn/docs/22_dynamic_programming/">动态规划</a></li>
+<li><a href="/algorithm-learn/docs/23_bit_map/">位图</a></li>
+<li><a href="/algorithm-learn/docs/24_bmore_tree/">索引</a></li>
+<li><a href="/algorithm-learn/docs/25_vector/">向量空间</a>
+<!-- raw HTML omitted --></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/algorithm-learn/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Trie 树</strong>
+
+  <label for="toc-control">
+    
+    <img src="/algorithm-learn/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+    <input type="checkbox" class="hidden" id="toc-control" />
+    <aside class="hidden clearfix">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#实现一棵-trie-树">实现一棵 Trie 树</a></li>
+    <li><a href="#trie-的时间复杂度">Trie 的时间复杂度</a></li>
+    <li><a href="#trie-占用的内存">Trie 占用的内存</a></li>
+    <li><a href="#trie-与散列表红黑树">Trie 与散列表、红黑树</a></li>
+  </ul>
+</nav>
+
+
+    </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h1 id="trie-树">
+  Trie 树
+  <a class="anchor" href="#trie-%e6%a0%91">#</a>
+</h1>
+<p>Trie 树（字典树）。树形结构。是一种专门处理字符串匹配的数据结构，用来解决在一组字符串集合中快速查找某个字符串的问题。</p>
+<p>例如，一个字符串集合中 6 个字符串： how，hi，her，hello，so，see。如果要在里面多次查找某个字符串是否存在。
+如果每次查找，都是拿要查找的字符串跟这 6 个字符串依次进行字符串匹配，效率肯定是比较低的。如何高效查询？</p>
+<p>利用 Trie 树结构，利用字符串之间的公共前缀，将重复的前缀合并在一起。如：</p>
+<p><img src="../../images/trie1.jpg" alt="trie1" /></p>
+<p><strong>根节点不包含任何信息</strong>。每个节点表示一个字符串中的字符，从根节点到红色节点的一条路径表示一个字符串
+（<strong>红色节点并不都是叶子节点</strong>）。</p>
+<p>构造 Trie 树结构的过程：</p>
+<p><img src="../../images/trie2.jpg" alt="trie2" /></p>
+<p>当在 Trie 树中查找一个字符串的时候，比如 “her”，将要查找的字符串分割成单个的字符 h，e，r，然后从 Trie 树的根节点开始
+匹配。依次找到  h，e，r 三个节点。</p>
+<p>如果要查找 “he”，从根节点开始，找到 h，e 节点。但是，路径的最后一个节点 “e” 并不是红色的。也就是说，“he” 是某个字
+符串的前缀子串，但并不能完全匹配任何字符串。</p>
+<h2 id="实现一棵-trie-树">
+  实现一棵 Trie 树
+  <a class="anchor" href="#%e5%ae%9e%e7%8e%b0%e4%b8%80%e6%a3%b5-trie-%e6%a0%91">#</a>
+</h2>
+<p>二叉树中，一个节点的左右子节点是通过两个指针来存储的，但是 Trie 树是一个<strong>多叉树</strong>，如何存储子节点？<strong>使用数组</strong>。
+借助散列表的思想，通过一个下标与字符一一映射的数组，来存储子节点的指针。</p>
+<p><img src="../../images/trie3.jpg" alt="trie3" /></p>
+<p>假设字符串中只有从 a 到 z 这 26 个小写字母，在数组中下标为 0 的位置，存储指向子节点 a 的指针，下标为 1 的位置存储指向子节点 b 的指针，
+以此类推，下标为 25 的位置，存储的是指向的子节点 z 的指针。如果某个字符的子节点不存在，就在对应的下标的位置存储 null。</p>
+<p>在 Trie 树中查找字符串的时候，就可以通过字符的 ASCII 码减去 a 的 ASCII 码，迅速找到匹配的子节点的指针。比如，d 的 ASCII 码减去
+a 的 ASCII 码就是 3，那子节点 d 的指针就存储在数组中下标为 3 的位置中。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">TrieNode</span> <span style="color:#66d9ef">struct</span> {
+   <span style="color:#a6e22e">data</span>            <span style="color:#66d9ef">string</span>
+   <span style="color:#a6e22e">isEndingChar</span>    <span style="color:#66d9ef">bool</span>
+   <span style="color:#a6e22e">children</span>        []<span style="color:#f92672">*</span><span style="color:#a6e22e">TrieNode</span>
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">NewTrieNode</span>(<span style="color:#a6e22e">data</span> <span style="color:#66d9ef">string</span>) <span style="color:#f92672">*</span><span style="color:#a6e22e">TrieNode</span> {
+   <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">TrieNode</span>{<span style="color:#a6e22e">data</span>, <span style="color:#66d9ef">false</span>, make([]<span style="color:#f92672">*</span><span style="color:#a6e22e">TrieNode</span>, <span style="color:#ae81ff">26</span>)}
+}
+
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">TrieTree</span> <span style="color:#66d9ef">struct</span> {
+   <span style="color:#a6e22e">root</span>    <span style="color:#f92672">*</span><span style="color:#a6e22e">TrieNode</span>
+}
+
+<span style="color:#66d9ef">func</span> <span style="color:#a6e22e">NewTrieTree</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">TrieTree</span> {
+   <span style="color:#66d9ef">return</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">TrieTree</span>{<span style="color:#a6e22e">NewTrieNode</span>(<span style="color:#e6db74">&#34;/&#34;</span>)}
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">t</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">TrieTree</span>) <span style="color:#a6e22e">Insert</span>(<span style="color:#a6e22e">data</span> <span style="color:#66d9ef">string</span>) {
+   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">basicChar</span> <span style="color:#66d9ef">rune</span> = <span style="color:#e6db74">&#39;a&#39;</span>
+   <span style="color:#a6e22e">node</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">root</span>
+   <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">s</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">data</span> {
+       <span style="color:#a6e22e">index</span> <span style="color:#f92672">:=</span> int(<span style="color:#a6e22e">s</span>) <span style="color:#f92672">-</span> int(<span style="color:#a6e22e">basicChar</span>)
+       <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">children</span>[<span style="color:#a6e22e">index</span>] <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+           <span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">children</span>[<span style="color:#a6e22e">index</span>] = <span style="color:#a6e22e">NewTrieNode</span>(string(<span style="color:#a6e22e">s</span>))
+       }
+       <span style="color:#a6e22e">node</span> = <span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">children</span>[<span style="color:#a6e22e">index</span>]
+   }
+   <span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">isEndingChar</span> = <span style="color:#66d9ef">true</span>
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">t</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">TrieTree</span>) <span style="color:#a6e22e">Find</span>(<span style="color:#a6e22e">pattern</span> <span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">bool</span> {
+   <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">basicChar</span> <span style="color:#66d9ef">rune</span> = <span style="color:#e6db74">&#39;a&#39;</span>
+   <span style="color:#a6e22e">node</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">t</span>.<span style="color:#a6e22e">root</span>
+   <span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">s</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">pattern</span> {
+       <span style="color:#a6e22e">index</span> <span style="color:#f92672">:=</span> int(<span style="color:#a6e22e">s</span>) <span style="color:#f92672">-</span> int(<span style="color:#a6e22e">basicChar</span>)
+       <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">children</span>[<span style="color:#a6e22e">index</span>] <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+           <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span>
+       }
+       <span style="color:#a6e22e">node</span> = <span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">children</span>[<span style="color:#a6e22e">index</span>]
+   }
+   <span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">isEndingChar</span> { <span style="color:#75715e">// 只匹配到部分前缀
+</span><span style="color:#75715e"></span>       <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span>
+   }
+   <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span>
+}
+</code></pre></div><h2 id="trie-的时间复杂度">
+  Trie 的时间复杂度
+  <a class="anchor" href="#trie-%e7%9a%84%e6%97%b6%e9%97%b4%e5%a4%8d%e6%9d%82%e5%ba%a6">#</a>
+</h2>
+<p>构建 Trie 树的过程，需要扫描所有的字符串，时间复杂度是 <code>O(n)</code>，n 表示所有字符串的长度和。</p>
+<p>如果要查询的字符串长度是 k，只需要比对大约 k 个节点，就能完成查询操作。所以，构建好 Trie 树后，查找字符串的时间复杂度是 <code>O(k)</code>，k 
+表示要查找的字符串的长度。</p>
+<h2 id="trie-占用的内存">
+  Trie 占用的内存
+  <a class="anchor" href="#trie-%e5%8d%a0%e7%94%a8%e7%9a%84%e5%86%85%e5%ad%98">#</a>
+</h2>
+<p>Trie 树用的是一种空间换时间的思路，实现 Trie 的时候，用数组来存储一个节点的子节点的指针。如果字符串中包含从 a 到 z 这 26 个字符，那每个节
+点都要存储一个长度为 26 的数组，并且每个数组存储一个 8 字节指针（或者是 4 字节，这个大小跟 CPU、操作系统、编译器等有关）。而且，即便一个
+节点只有很少的子节点，远小于 26 个，比如 3、4 个，也要维护一个长度为 26 的数组。</p>
+<p>Trie 树的本质是避免重复存储一组字符串的相同前缀子串，但是现在每个字符的存储远远大于 1 个字节。按照上面例子，数组长度为 26，每个元素
+是 8 字节，那每个节点就会额外需要 <code>26*8=208</code> 个字节。而且这还是只包含 26 个字符的情况。如果字符串中不仅包含小写字母，还包含大写字母、数字、
+甚至是中文，那需要的存储空间就更多了。</p>
+<p>也就是说，在某些情况下，Trie 树不一定会节省存储空间。在重复的前缀并不多的情况下，Trie 树不但不能节省内存，还有可能会浪费更多的内存。</p>
+<p>可以稍微牺牲一点查询的效率，将每个节点中的数组换成其他数据结构，来存储一个节点的子节点指针。比如有序数组、跳表、散列表、红黑树等。</p>
+<h2 id="trie-与散列表红黑树">
+  Trie 与散列表、红黑树
+  <a class="anchor" href="#trie-%e4%b8%8e%e6%95%a3%e5%88%97%e8%a1%a8%e7%ba%a2%e9%bb%91%e6%a0%91">#</a>
+</h2>
+<p>散列表、红黑树、跳表等这些数据结构也可以实现在一组字符串中查找字符串的功能。跟 Trie 树比较一下，看看它们各自的优缺点和应用场景。</p>
+<p>Trie 树它对要处理的字符串要求：</p>
+<ol>
+<li>字符串中包含的字符集不能太大。如果字符集太大，那存储空间可能就会浪费很多。</li>
+<li>要求字符串的前缀重合比较多，不然空间消耗会变大很多。</li>
+<li>通过指针串起来的数据块是不连续的，而 Trie 树中用到了指针，所以，对缓存并不友好。</li>
+</ol>
+<p>Trie 树不适合精确匹配查找，这种问题更适合用散列表或者红黑树来解决。Trie 树比较适合的是查找前缀匹配的字符串。比如索引擎的搜索关键词提示
+功能。当你在搜索引擎的搜索框中，输入要搜索的文字的某一部分的时候，搜索引擎就会自动弹出下拉框，里面是各种关键词提示。</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+  <div><a class="flex align-center" href="https://github.com/shipengqi/algorithm-learn/commit/f0affa43a408758a4a1a44d5288e6e0087d8415f" title='Last modified by shipengqi | June 18, 2020' target="_blank" rel="noopener">
+      <img src="/algorithm-learn/svg/calendar.svg" class="book-icon" alt="Calendar" />
+      <span>June 18, 2020</span>
+    </a>
+  </div>
+
+
+
+  <div>
+    <a class="flex align-center" href="https://github.com/shipengqi/algorithm-learn/edit/master/content//docs/17_trie.md" target="_blank" rel="noopener">
+      <img src="/algorithm-learn/svg/edit.svg" class="book-icon" alt="Edit" />
+      <span>Edit this page</span>
+    </a>
+  </div>
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#实现一棵-trie-树">实现一棵 Trie 树</a></li>
+    <li><a href="#trie-的时间复杂度">Trie 的时间复杂度</a></li>
+    <li><a href="#trie-占用的内存">Trie 占用的内存</a></li>
+    <li><a href="#trie-与散列表红黑树">Trie 与散列表、红黑树</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
