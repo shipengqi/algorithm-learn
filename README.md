@@ -4,11 +4,11 @@ Algorithm learning ...
 
 ## Usage
 
-development:
+Development:
 
 ```sh
-# git clone  https://github.com/alex-shpak/hugo-book themes/book
-git submodule add https://github.com/alex-shpak/hugo-book themes/book
+# install hugo-book as git submodule
+git submodule add git@github.com:alex-shpak/hugo-book.git themes/book
 
 hugo server --minify --theme book
 ```

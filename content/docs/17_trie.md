@@ -1,5 +1,6 @@
 ---
 title: Trie 树
+weight: 17
 ---
 
 # Trie 树
